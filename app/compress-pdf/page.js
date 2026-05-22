@@ -1,56 +1,118 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
-import { downloadFile, formatSize } from '@/lib/pdfUtils';
+import { formatSize } from '@/lib/pdfUtils';
 
 const related = [
   { name: 'Merge PDF', slug: 'merge-pdf' },
-  { name: 'Compress Image', slug: 'compress-image' },
+  { name: 'Split PDF', slug: 'split-pdf' },
   { name: 'PDF to JPG', slug: 'pdf-to-jpg' },
 ];
 
+const LEVELS = [
+  { id: 'basic',  label: 'Basic',   desc: 'Fast. Removes unused objects. Best for text PDFs.',         scale: 2,   quality: 0.85 },
+  { id: 'medium', label: 'Medium',  desc: 'Good balance. Re-renders pages at reduced quality.',          scale: 1.5, quality: 0.72 },
+  { id: 'high',   label: 'High',    desc: 'Maximum compression. Best for scanned / image-heavy PDFs.',  scale: 1.2, quality: 0.55 },
+];
+
 export default function CompressPDF() {
-  const [file, setFile]       = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState(null);
-  const [dragging, setDrag]   = useState(false);
+  const [file, setFile]         = useState(null);
+  const [level, setLevel]       = useState('medium');
+  const [loading, setLoading]   = useState(false);
+  const [progress, setProgress] = useState('');
+  const [result, setResult]     = useState(null);
+  const [dragging, setDrag]     = useState(false);
 
   async function handleFile(f) {
     if (!f || f.type !== 'application/pdf') return;
-    setFile(f);
-    setResult(null);
+    setFile(f); setResult(null); setProgress('');
   }
 
   async function compress() {
     if (!file) return;
-    setLoading(true);
+    setLoading(true); setResult(null);
+
     try {
-      const { PDFDocument } = await import('pdf-lib');
-      const buf = await file.arrayBuffer();
-      const doc = await PDFDocument.load(buf, { updateMetadata: false });
-      const bytes = await doc.save({ useObjectStreams: true });
-      const saved = file.size - bytes.length;
-      const pct = ((saved / file.size) * 100).toFixed(1);
-      setResult({ bytes, saved, pct });
-      downloadFile(bytes, `breklo-compressed.pdf`);
+      const cfg = LEVELS.find(l => l.id === level);
+
+      if (level === 'basic') {
+        // Fast mode: pdf-lib re-save with object streams
+        setProgress('Optimising PDF structure...');
+        const { PDFDocument } = await import('pdf-lib');
+        const doc = await PDFDocument.load(await file.arrayBuffer(), { updateMetadata: false });
+        const bytes = await doc.save({ useObjectStreams: true });
+        const saved = file.size - bytes.length;
+        const pct = ((saved / file.size) * 100).toFixed(1);
+        setResult({ bytes, pct: Math.max(0, pct) });
+        downloadBytes(bytes, 'breklo-compressed.pdf');
+      } else {
+        // Re-render mode: render each page to JPEG then rebuild PDF
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+        const { PDFDocument } = await import('pdf-lib');
+
+        const src = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+        const total = src.numPages;
+        const newPdf = await PDFDocument.create();
+
+        for (let i = 1; i <= total; i++) {
+          setProgress(`Compressing page ${i} of ${total}...`);
+          const page = await src.getPage(i);
+          const viewport = page.getViewport({ scale: cfg.scale });
+          const canvas = document.createElement('canvas');
+          canvas.width  = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          const jpgBuf = await new Promise(r =>
+            canvas.toBlob(b => b.arrayBuffer().then(r), 'image/jpeg', cfg.quality)
+          );
+          const img  = await newPdf.embedJpg(jpgBuf);
+          const pg   = newPdf.addPage([viewport.width, viewport.height]);
+          pg.drawImage(img, { x: 0, y: 0, width: viewport.width, height: viewport.height });
+        }
+
+        setProgress('Saving compressed PDF...');
+        const bytes = await newPdf.save();
+        const saved = file.size - bytes.length;
+        const pct = ((saved / file.size) * 100).toFixed(1);
+        setResult({ bytes, pct: Math.max(0, pct) });
+        downloadBytes(bytes, 'breklo-compressed.pdf');
+      }
+      setProgress('');
     } catch (e) {
-      alert('Error compressing PDF.');
+      console.error(e);
+      alert('Error compressing PDF. Please try again.');
+      setProgress('');
     }
     setLoading(false);
+  }
+
+  function downloadBytes(bytes, name) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
     <ToolLayout
       title="Compress PDF"
-      subtitle="Reduce the file size of your PDF document quickly and for free."
+      subtitle="Significantly reduce PDF file size — choose your compression level."
       bullets={[
-        'Reduce PDF file size without losing quality',
-        'Object stream compression for maximum reduction',
+        'Three compression levels to choose from',
+        'Re-renders pages for maximum file size reduction',
         'Runs entirely in your browser — no uploads',
         'Free with no file size limits',
       ]}
       relatedTools={related}
     >
+      {/* DROP ZONE */}
       <div
         onDragOver={e => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
@@ -68,11 +130,12 @@ export default function CompressPDF() {
             <div style={{ width: 40, height: 40, background: '#fff1f2', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span style={{ fontSize: 9, fontWeight: 800, color: '#be123c' }}>PDF</span>
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{file.name}</div>
               <div style={{ fontSize: 12, color: '#9ca3af' }}>{formatSize(file.size)}</div>
             </div>
-            <button onClick={e => { e.stopPropagation(); setFile(null); setResult(null); }} style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: '#ef4444', fontSize: 12 }}>✕</button>
+            <button onClick={e => { e.stopPropagation(); setFile(null); setResult(null); }}
+              style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: '#ef4444', fontSize: 12 }}>✕</button>
           </div>
         ) : (
           <>
@@ -86,13 +149,47 @@ export default function CompressPDF() {
         <input id="fi" type="file" accept=".pdf,application/pdf" style={{ display: 'none' }} onChange={e => handleFile(e.target.files[0])} />
       </div>
 
-      {result && (
-        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14, display: 'flex', gap: 16 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 800, fontSize: 22, color: '#15803d' }}>{result.pct > 0 ? `-${result.pct}%` : '0%'}</div>
-            <div style={{ fontSize: 11, color: '#166534' }}>reduced</div>
+      {/* COMPRESSION LEVEL */}
+      {file && (
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>Compression level</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {LEVELS.map(l => (
+              <button key={l.id} onClick={() => setLevel(l.id)} style={{
+                padding: '11px 14px', borderRadius: 10, textAlign: 'left', cursor: 'pointer',
+                border: `1.5px solid ${level === l.id ? '#0071e3' : '#e5e7eb'}`,
+                background: level === l.id ? '#eff6ff' : '#fff',
+              }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: level === l.id ? '#0071e3' : '#111', marginBottom: 2 }}>{l.label}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af' }}>{l.desc}</div>
+              </button>
+            ))}
           </div>
-          <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: 16 }}>
+          {level !== 'basic' && (
+            <p style={{ fontSize: 11, color: '#f59e0b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+              ⚠ Medium / High mode converts pages to images — text will not be selectable in the output.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* PROGRESS */}
+      {progress && (
+        <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 9, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#1d4ed8', fontWeight: 500 }}>
+          {progress}
+        </div>
+      )}
+
+      {/* RESULT */}
+      {result && (
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14, display: 'flex', gap: 20, alignItems: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 800, fontSize: 26, color: '#15803d', letterSpacing: '-1px' }}>
+              {result.pct > 0 ? `-${result.pct}%` : '0%'}
+            </div>
+            <div style={{ fontSize: 11, color: '#166534' }}>reduction</div>
+          </div>
+          <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: 20 }}>
             <div style={{ fontSize: 13, color: '#166534' }}>Original: <strong>{formatSize(file.size)}</strong></div>
             <div style={{ fontSize: 13, color: '#166534' }}>Compressed: <strong>{formatSize(result.bytes.length)}</strong></div>
           </div>

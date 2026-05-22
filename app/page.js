@@ -77,9 +77,9 @@ const categories = [
     { name:'Enhance Image',      abbr:'ENH', live:false, slug:null },
   ]},
   { id:'av', label:'Audio & Video', tools:[
-    { name:'MP4 to MP3',  abbr:'MP3', live:false, slug:null },
-    { name:'WAV to MP3',  abbr:'MP3', live:false, slug:null },
-    { name:'MP3 to WAV',  abbr:'WAV', live:false, slug:null },
+    { name:'MP4 to MP3',  abbr:'MP3', live:true,  slug:'mp4-to-mp3' },
+    { name:'WAV to MP3',  abbr:'MP3', live:true,  slug:'wav-to-mp3' },
+    { name:'MP3 to WAV',  abbr:'WAV', live:true,  slug:'mp3-to-wav' },
     { name:'MOV to MP4',  abbr:'MP4', live:false, slug:null },
     { name:'MKV to MP4',  abbr:'MP4', live:false, slug:null },
     { name:'MKV to MP3',  abbr:'MP3', live:false, slug:null },
