@@ -11,12 +11,18 @@ export default function Navbar() {
       padding: '0 2.5rem', justifyContent: 'space-between',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <Link href="/" style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.6px', color: '#111' }}>
+        <Link href="/" style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.6px', color: '#111', textDecoration: 'none' }}>
           breklo<span style={{ color: '#0071e3' }}>.</span>
         </Link>
         <div style={{ display: 'flex', gap: '1.6rem' }}>
-          {[['Edit & Sign', '/'], ['Convert', '/'], ['Image Tools', '/'], ['Pricing', '/']].map(([l, h]) => (
-            <Link key={l} href={h} style={{ fontSize: 14, color: '#555', fontWeight: 400, transition: 'color .15s' }}
+          {[
+            ['Edit & Sign', '/'],
+            ['Convert', '/'],
+            ['Image Tools', '/'],
+            ['Blog', '/blog'],
+            ['Pricing', '/'],
+          ].map(([l, h]) => (
+            <Link key={l} href={h} style={{ fontSize: 14, color: '#555', fontWeight: 400, textDecoration: 'none', transition: 'color .15s' }}
               onMouseEnter={e => e.target.style.color = '#0071e3'}
               onMouseLeave={e => e.target.style.color = '#555'}
             >{l}</Link>

@@ -52,6 +52,7 @@ export default function HeicToJpg() {
 
   return (
     <ToolLayout
+      slug="heic-to-jpg"
       title="HEIC to JPG"
       subtitle="Convert iPhone HEIC and HEIF photos to universally supported JPG format."
       bullets={[

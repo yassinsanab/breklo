@@ -4,7 +4,7 @@ import ToolLayout from '@/components/ToolLayout';
 import { convertImageFormat, downloadBlob, formatSize, replaceExt } from '@/lib/imageUtils';
 
 // Generic image format converter — used by jpg-to-png, png-to-jpg, jpg-to-webp, png-to-webp
-export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, outputMime, outputExt, relatedTools }) {
+export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, outputMime, outputExt, relatedTools, slug = '' }) {
   const [files, setFiles]     = useState([]);
   const [quality, setQuality] = useState(0.92);
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
   const showQuality = outputMime !== 'image/png';
 
   return (
-    <ToolLayout title={title} subtitle={subtitle} bullets={bullets} relatedTools={relatedTools}>
+    <ToolLayout title={title} subtitle={subtitle} bullets={bullets} relatedTools={relatedTools} slug={slug}>
       <div
         onDragOver={e => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}

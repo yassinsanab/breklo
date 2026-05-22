@@ -56,6 +56,7 @@ export default function PasswordProtect() {
 
   return (
     <ToolLayout
+      slug="password-protect-pdf"
       title="Password Protect PDF"
       subtitle="Add a password to your PDF so only authorised people can open it."
       bullets={[

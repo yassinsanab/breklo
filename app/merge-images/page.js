@@ -86,6 +86,7 @@ export default function MergeImages() {
 
   return (
     <ToolLayout
+      slug="merge-images"
       title="Merge Images"
       subtitle="Combine multiple images into one — stack them vertically or side by side."
       bullets={[

@@ -62,6 +62,7 @@ export default function PdfToJpg() {
 
   return (
     <ToolLayout
+      slug="pdf-to-jpg"
       title="PDF to JPG"
       subtitle="Convert every page of your PDF into high-quality JPG images."
       bullets={[

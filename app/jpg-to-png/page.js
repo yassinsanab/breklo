@@ -4,6 +4,7 @@ import { ImageConverter } from '@/components/ImageConverter';
 export default function JpgToPng() {
   return (
     <ImageConverter
+      slug="jpg-to-png"
       title="JPG to PNG"
       subtitle="Convert JPG images to lossless PNG format. Ideal for graphics, logos and screenshots."
       bullets={[

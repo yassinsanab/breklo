@@ -63,6 +63,7 @@ export default function PdfToPng() {
 
   return (
     <ToolLayout
+      slug="pdf-to-png"
       title="PDF to PNG"
       subtitle="Convert every page of your PDF into high-quality, transparent-ready PNG images."
       bullets={[

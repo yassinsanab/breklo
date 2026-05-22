@@ -4,6 +4,7 @@ import { ImageConverter } from '@/components/ImageConverter';
 export default function JpgToWebp() {
   return (
     <ImageConverter
+      slug="jpg-to-webp"
       title="JPG to WebP"
       subtitle="Convert JPG images to modern WebP format for up to 30% smaller file sizes."
       bullets={[

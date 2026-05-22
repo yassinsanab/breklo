@@ -53,6 +53,7 @@ export default function JpgToPdf() {
 
   return (
     <ToolLayout
+      slug="jpg-to-pdf"
       title="JPG to PDF"
       subtitle="Convert one or multiple JPG images into a single PDF document."
       bullets={[

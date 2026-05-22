@@ -58,6 +58,7 @@ export default function DeletePages() {
 
   return (
     <ToolLayout
+      slug="delete-pdf-pages"
       title="Delete PDF Pages"
       subtitle="Remove unwanted pages from your PDF document quickly and for free."
       bullets={[

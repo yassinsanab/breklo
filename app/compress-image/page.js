@@ -95,6 +95,7 @@ export default function CompressImage() {
 
   return (
     <ToolLayout
+      slug="compress-image"
       title="Compress Image"
       subtitle="Reduce image file sizes dramatically. Choose a preset or set your own quality."
       bullets={[

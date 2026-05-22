@@ -49,6 +49,7 @@ export default function Mp4ToMp3() {
 
   return (
     <ToolLayout
+      slug="mp4-to-mp3"
       title="MP4 to MP3"
       subtitle="Extract the audio track from any MP4 video and save it as an MP3 file."
       bullets={[

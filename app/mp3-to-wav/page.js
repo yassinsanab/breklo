@@ -45,6 +45,7 @@ export default function Mp3ToWav() {
 
   return (
     <ToolLayout
+      slug="mp3-to-wav"
       title="MP3 to WAV"
       subtitle="Convert MP3 audio to uncompressed WAV format for editing and professional use."
       bullets={[

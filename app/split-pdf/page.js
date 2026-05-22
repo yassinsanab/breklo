@@ -74,6 +74,7 @@ export default function SplitPDF() {
 
   return (
     <ToolLayout
+      slug="split-pdf"
       title="Split PDF"
       subtitle="Split a PDF into individual pages, or extract a specific range of pages."
       bullets={[

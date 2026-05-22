@@ -102,6 +102,7 @@ export default function CompressPDF() {
 
   return (
     <ToolLayout
+      slug="compress-pdf"
       title="Compress PDF"
       subtitle="Significantly reduce PDF file size — choose your compression level."
       bullets={[

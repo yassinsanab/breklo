@@ -57,6 +57,7 @@ export default function ExtractPages() {
 
   return (
     <ToolLayout
+      slug="extract-pdf-pages"
       title="Extract PDF Pages"
       subtitle="Select and extract specific pages from a PDF into a new document."
       bullets={[

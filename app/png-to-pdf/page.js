@@ -53,6 +53,7 @@ export default function PngToPdf() {
 
   return (
     <ToolLayout
+      slug="png-to-pdf"
       title="PNG to PDF"
       subtitle="Convert one or multiple PNG images into a single PDF document."
       bullets={[

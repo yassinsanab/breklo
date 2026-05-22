@@ -56,6 +56,7 @@ export default function OrganizePDF() {
 
   return (
     <ToolLayout
+      slug="organize-pdf"
       title="Organize PDF"
       subtitle="Reorder pages in your PDF by dragging them up or down to your preferred order."
       bullets={[

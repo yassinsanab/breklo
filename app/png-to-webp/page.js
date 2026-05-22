@@ -4,6 +4,7 @@ import { ImageConverter } from '@/components/ImageConverter';
 export default function PngToWebp() {
   return (
     <ImageConverter
+      slug="png-to-webp"
       title="PNG to WebP"
       subtitle="Convert PNG images to WebP format for significantly smaller files on the web."
       bullets={[

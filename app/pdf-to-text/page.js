@@ -67,6 +67,7 @@ export default function PdfToText() {
 
   return (
     <ToolLayout
+      slug="pdf-to-text"
       title="PDF to Text"
       subtitle="Extract all text content from your PDF document instantly."
       bullets={[

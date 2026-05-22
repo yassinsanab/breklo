@@ -4,6 +4,7 @@ import { ImageConverter } from '@/components/ImageConverter';
 export default function PngToJpg() {
   return (
     <ImageConverter
+      slug="png-to-jpg"
       title="PNG to JPG"
       subtitle="Convert PNG images to JPG format for smaller file sizes and wider compatibility."
       bullets={[

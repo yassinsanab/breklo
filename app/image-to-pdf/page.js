@@ -110,6 +110,7 @@ export default function ImageToPdf() {
 
   return (
     <ToolLayout
+      slug="image-to-pdf"
       title="Image to PDF"
       subtitle="Convert JPG, PNG, WebP or GIF images into a PDF document. Supports multiple images."
       bullets={[

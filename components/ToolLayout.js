@@ -1,9 +1,13 @@
 'use client';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import ToolFAQ from './ToolFAQ';
 import Link from 'next/link';
 
-export default function ToolLayout({ title, subtitle, bullets, children, relatedTools = [] }) {
+export default function ToolLayout({ title, subtitle, bullets, children, relatedTools = [], slug = '' }) {
+  const { toolFaqs } = require('@/lib/toolFaqs');
+  const faqs = slug && toolFaqs[slug] ? toolFaqs[slug] : [];
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
@@ -31,23 +35,21 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
           ))}
         </div>
 
-        {/* RIGHT — tool UI slot */}
-        <div>
-          {children}
-        </div>
+        {/* RIGHT — tool UI */}
+        <div>{children}</div>
       </main>
 
       {/* RELATED TOOLS */}
       {relatedTools.length > 0 && (
-        <section style={{ borderTop: '1px solid #f4f4f5', padding: '48px 2.5rem', background: '#fafafa' }}>
+        <section style={{ borderTop: '1px solid #f4f4f5', padding: '40px 2.5rem' }}>
           <div style={{ maxWidth: 1060, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111', marginBottom: 20 }}>Related tools</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 16 }}>Related tools</h2>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {relatedTools.map(t => (
                 <Link key={t.slug} href={`/${t.slug}`} style={{
-                  border: '1px solid #e5e7eb', borderRadius: 9, padding: '10px 16px',
+                  border: '1px solid #e5e7eb', borderRadius: 9, padding: '9px 16px',
                   fontSize: 13, fontWeight: 500, color: '#374151', background: '#fff',
-                  transition: 'border-color .15s',
+                  textDecoration: 'none', transition: 'border-color .15s',
                 }}>
                   {t.name}
                 </Link>
@@ -56,6 +58,9 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
           </div>
         </section>
       )}
+
+      {/* FAQ */}
+      {faqs.length > 0 && <ToolFAQ faqs={faqs} toolName={title} />}
 
       <Footer />
     </div>

@@ -48,6 +48,7 @@ export default function WavToMp3() {
 
   return (
     <ToolLayout
+      slug="wav-to-mp3"
       title="WAV to MP3"
       subtitle="Convert uncompressed WAV audio files to smaller, shareable MP3 files."
       bullets={[
