@@ -10,14 +10,15 @@ export default function sitemap() {
     'jpg-to-pdf','png-to-pdf','image-to-pdf',
     'compress-image','heic-to-jpg','jpg-to-png','png-to-jpg',
     'jpg-to-webp','png-to-webp','merge-images',
-    'mp4-to-mp3','wav-to-mp3','mp3-to-wav',
+    'gif-to-jpg','svg-to-jpg',
+    'mp4-to-mp3','wav-to-mp3','mp3-to-wav','m4a-to-mp3','mp4-to-wav',
   ];
 
   const blogSlugs = getAllSlugs();
 
   return [
-    { url: base,              lastModified: new Date(), changeFrequency: 'weekly',  priority: 1.0 },
-    { url: `${base}/blog`,    lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.9 },
+    { url: base,           lastModified: new Date(), changeFrequency: 'weekly',  priority: 1.0 },
+    { url: `${base}/blog`, lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.9 },
     ...tools.map(slug => ({
       url: `${base}/${slug}`,
       lastModified: new Date(),

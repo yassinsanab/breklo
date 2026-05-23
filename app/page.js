@@ -71,7 +71,8 @@ const categories = [
     { name:'JPG to PNG',         abbr:'PNG', live:true,  slug:'jpg-to-png' },
     { name:'PNG to JPG',         abbr:'JPG', live:true,  slug:'png-to-jpg' },
     { name:'JPG to WebP',        abbr:'WBP', live:true,  slug:'jpg-to-webp' },
-    { name:'GIF to JPG',         abbr:'GIF', live:false, slug:null },
+    { name:'GIF to JPG',         abbr:'GIF', live:true,  slug:'gif-to-jpg' },
+    { name:'SVG to JPG',         abbr:'SVG', live:true,  slug:'svg-to-jpg' },
     { name:'Merge Images',       abbr:'MRG', live:true,  slug:'merge-images' },
     { name:'PNG to WebP',        abbr:'WBP', live:true,  slug:'png-to-webp' },
     { name:'Enhance Image',      abbr:'ENH', live:false, slug:null },
@@ -83,7 +84,8 @@ const categories = [
     { name:'MOV to MP4',  abbr:'MP4', live:false, slug:null },
     { name:'MKV to MP4',  abbr:'MP4', live:false, slug:null },
     { name:'MKV to MP3',  abbr:'MP3', live:false, slug:null },
-    { name:'M4A to MP3',  abbr:'MP3', live:false, slug:null },
+    { name:'M4A to MP3',  abbr:'MP3', live:true,  slug:'m4a-to-mp3' },
+    { name:'MP4 to WAV',  abbr:'WAV', live:true,  slug:'mp4-to-wav' },
   ]},
 ];
 
