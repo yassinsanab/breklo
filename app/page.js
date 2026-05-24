@@ -75,6 +75,8 @@ const categories = [
     { name:'SVG to JPG',         abbr:'SVG', live:true,  slug:'svg-to-jpg' },
     { name:'Merge Images',       abbr:'MRG', live:true,  slug:'merge-images' },
     { name:'PNG to WebP',        abbr:'WBP', live:true,  slug:'png-to-webp' },
+    { name:'WebP to JPG',        abbr:'WBP', live:true,  slug:'webp-to-jpg' },
+    { name:'Resize Image',       abbr:'RSZ', live:true,  slug:'resize-image' },
     { name:'Enhance Image',      abbr:'ENH', live:false, slug:null },
   ]},
   { id:'av', label:'Audio & Video', tools:[
@@ -86,6 +88,8 @@ const categories = [
     { name:'MKV to MP3',  abbr:'MP3', live:false, slug:null },
     { name:'M4A to MP3',  abbr:'MP3', live:true,  slug:'m4a-to-mp3' },
     { name:'MP4 to WAV',  abbr:'WAV', live:true,  slug:'mp4-to-wav' },
+    { name:'FLAC to MP3', abbr:'MP3', live:true,  slug:'flac-to-mp3' },
+    { name:'OGG to MP3',  abbr:'MP3', live:true,  slug:'ogg-to-mp3' },
   ]},
 ];
 

@@ -10,8 +10,9 @@ export default function sitemap() {
     'jpg-to-pdf','png-to-pdf','image-to-pdf',
     'compress-image','heic-to-jpg','jpg-to-png','png-to-jpg',
     'jpg-to-webp','png-to-webp','merge-images',
-    'gif-to-jpg','svg-to-jpg',
+    'gif-to-jpg','svg-to-jpg','webp-to-jpg','resize-image',
     'mp4-to-mp3','wav-to-mp3','mp3-to-wav','m4a-to-mp3','mp4-to-wav',
+    'flac-to-mp3','ogg-to-mp3',
   ];
 
   const blogSlugs = getAllSlugs();
