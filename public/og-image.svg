@@ -1,0 +1,75 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#ffffff"/>
+
+  <!-- Subtle grid -->
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.03"/>
+
+  <!-- Top blue accent bar -->
+  <rect width="1200" height="4" fill="#0071e3"/>
+
+  <!-- Left blue blob -->
+  <circle cx="0" cy="200" r="300" fill="#0071e3" opacity="0.04"/>
+  <!-- Right blob -->
+  <circle cx="1200" cy="500" r="250" fill="#6366f1" opacity="0.04"/>
+
+  <!-- Logo -->
+  <text x="80" y="120" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="52" fill="#111111" letter-spacing="-2">breklo</text>
+  <text x="282" y="120" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="52" fill="#0071e3" letter-spacing="-2">.</text>
+
+  <!-- Main headline -->
+  <text x="80" y="240" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="72" fill="#0a0a0a" letter-spacing="-3">Free Online File Tools</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="316" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="300" font-size="28" fill="#6b7280">PDF · Image · Audio · Video — all in your browser</text>
+
+  <!-- Tool pills row 1 -->
+  <rect x="80" y="380" width="160" height="44" rx="22" fill="#eff6ff"/>
+  <text x="160" y="408" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#0071e3" text-anchor="middle">Compress PDF</text>
+
+  <rect x="256" y="380" width="140" height="44" rx="22" fill="#eff6ff"/>
+  <text x="326" y="408" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#0071e3" text-anchor="middle">Merge PDF</text>
+
+  <rect x="412" y="380" width="150" height="44" rx="22" fill="#eff6ff"/>
+  <text x="487" y="408" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#0071e3" text-anchor="middle">HEIC to JPG</text>
+
+  <rect x="578" y="380" width="150" height="44" rx="22" fill="#eff6ff"/>
+  <text x="653" y="408" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#0071e3" text-anchor="middle">MP4 to MP3</text>
+
+  <rect x="744" y="380" width="160" height="44" rx="22" fill="#eff6ff"/>
+  <text x="824" y="408" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#0071e3" text-anchor="middle">Resize Image</text>
+
+  <!-- Tool pills row 2 -->
+  <rect x="80" y="440" width="130" height="44" rx="22" fill="#f4f4f5"/>
+  <text x="145" y="468" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#555" text-anchor="middle">Split PDF</text>
+
+  <rect x="226" y="440" width="150" height="44" rx="22" fill="#f4f4f5"/>
+  <text x="301" y="468" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#555" text-anchor="middle">PDF to JPG</text>
+
+  <rect x="392" y="440" width="165" height="44" rx="22" fill="#f4f4f5"/>
+  <text x="474" y="468" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#555" text-anchor="middle">Compress Image</text>
+
+  <rect x="573" y="440" width="150" height="44" rx="22" fill="#f4f4f5"/>
+  <text x="648" y="468" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#555" text-anchor="middle">WAV to MP3</text>
+
+  <rect x="739" y="440" width="135" height="44" rx="22" fill="#f4f4f5"/>
+  <text x="806" y="468" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="15" fill="#555" text-anchor="middle">PNG to JPG</text>
+
+  <!-- Stats bottom -->
+  <line x1="80" y1="538" x2="1120" y2="538" stroke="#f0f0f0" stroke-width="1"/>
+
+  <text x="80" y="590" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="24" fill="#111">34+</text>
+  <text x="80" y="614" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="14" fill="#9ca3af">Free tools</text>
+
+  <text x="240" y="590" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="24" fill="#111">100%</text>
+  <text x="240" y="614" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="14" fill="#9ca3af">Browser-based</text>
+
+  <text x="420" y="590" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="24" fill="#111">No signup</text>
+  <text x="420" y="614" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="14" fill="#9ca3af">Ever required</text>
+
+  <text x="640" y="590" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="24" fill="#111">Free</text>
+  <text x="640" y="614" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="14" fill="#9ca3af">Forever</text>
+
+  <!-- URL -->
+  <text x="1120" y="605" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="16" fill="#d1d5db" text-anchor="end">breklo.com</text>
+</svg>

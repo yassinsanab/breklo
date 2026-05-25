@@ -1,4 +1,6 @@
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -7,18 +9,101 @@
 html {
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent layout shift from scrollbar */
+  scrollbar-gutter: stable;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 body {
   background: #fff;
   color: #111;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
+/* Hide scrollbars visually but keep functionality */
 ::-webkit-scrollbar {
   display: none;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Improve touch targets on mobile */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text size adjustment on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Image performance */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Range input consistent styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0071e3;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,113,227,0.3);
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0071e3;
+  cursor: pointer;
+  border: none;
+}
+
+/* Number input - remove arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid #0071e3;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
