@@ -46,7 +46,7 @@ const TI = {
 /* ─── ALL TOOLS DATA ─────────────────────────────────────── */
 const ALL_TOOLS = [
   // Edit & Sign
-  { name:'Edit PDF',           cat:'Edit & Sign',       icon:TI.edit,      color:'blue',   live:false, slug:null },
+  { name:'Edit PDF',           cat:'Edit & Sign',       icon:TI.edit,      color:'blue',   live:true,  slug:'edit-pdf' },
   { name:'Add Text',           cat:'Edit & Sign',       icon:TI.edit,      color:'blue',   live:false, slug:null },
   { name:'Fill PDF',           cat:'Edit & Sign',       icon:TI.fill,      color:'blue',   live:false, slug:null },
   { name:'Sign PDF',           cat:'Edit & Sign',       icon:TI.sign,      color:'purple', live:false, slug:null },
