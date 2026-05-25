@@ -3,40 +3,70 @@ import Link from 'next/link';
 
 export default function Navbar() {
   return (
-    <nav style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(14px)',
-      borderBottom: '1px solid #f4f4f5', height: 58,
-      display: 'flex', alignItems: 'center',
-      padding: '0 2.5rem', justifyContent: 'space-between',
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      background: 'rgba(255,255,255,.9)',
+      backdropFilter: 'blur(14px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+      borderBottom: '1px solid #ededef',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <Link href="/" style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.6px', color: '#111', textDecoration: 'none' }}>
-          breklo<span style={{ color: '#0071e3' }}>.</span>
+      <div style={{
+        width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        height: 64, gap: 24,
+      }}>
+        {/* LOGO */}
+        <Link href="/" style={{
+          display: 'inline-flex', alignItems: 'baseline', gap: 1,
+          fontWeight: 700, letterSpacing: '-.025em', fontSize: 22, color: '#0a0a0a',
+          textDecoration: 'none', flexShrink: 0,
+        }}>
+          <span>breklo</span>
+          <span style={{ color: '#2563eb', fontSize: 26, lineHeight: 0, marginLeft: 1 }}>.</span>
         </Link>
-        <div style={{ display: 'flex', gap: '1.6rem' }}>
+
+        {/* NAV LINKS — centered */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }}>
           {[
-            ['Edit & Sign', '/'],
-            ['Convert', '/'],
-            ['Image Tools', '/'],
+            ['Edit & Sign', '/#tools'],
+            ['Convert', '/#tools'],
+            ['Image Tools', '/#tools'],
+            ['Audio & Video', '/#tools'],
             ['Blog', '/blog'],
-            ['Pricing', '/'],
-          ].map(([l, h]) => (
-            <Link key={l} href={h} style={{ fontSize: 14, color: '#555', fontWeight: 400, textDecoration: 'none', transition: 'color .15s' }}
-              onMouseEnter={e => e.target.style.color = '#0071e3'}
-              onMouseLeave={e => e.target.style.color = '#555'}
-            >{l}</Link>
+          ].map(([label, href]) => (
+            <Link key={label} href={href} style={{
+              padding: '8px 14px', borderRadius: 8, fontSize: 14.5, fontWeight: 500,
+              color: '#3f3f46', textDecoration: 'none', transition: 'color .15s, background .15s',
+              whiteSpace: 'nowrap',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#0a0a0a'; e.currentTarget.style.background = '#fafafa'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#3f3f46'; e.currentTarget.style.background = 'transparent'; }}
+            >
+              {label}
+            </Link>
           ))}
-        </div>
+        </nav>
+
+        {/* ALL TOOLS BUTTON */}
+        <Link href="/#tools-index" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '8px 14px', borderRadius: 8,
+          fontSize: 14.5, fontWeight: 600, color: '#0a0a0a',
+          textDecoration: 'none', flexShrink: 0,
+          transition: 'background .15s',
+        }}
+          onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          {/* burger icon */}
+          <span style={{ display: 'inline-flex', flexDirection: 'column', justifyContent: 'center', gap: 3, width: 16, height: 16 }}>
+            <i style={{ display: 'block', height: 1.5, background: 'currentColor', borderRadius: 2 }} />
+            <i style={{ display: 'block', height: 1.5, background: 'currentColor', borderRadius: 2, width: '70%' }} />
+            <i style={{ display: 'block', height: 1.5, background: 'currentColor', borderRadius: 2 }} />
+          </span>
+          <span>All tools</span>
+        </Link>
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button style={{ background: 'none', border: 'none', fontSize: 14, color: '#555', cursor: 'pointer', padding: '8px 14px', fontWeight: 500 }}>
-          Log in
-        </button>
-        <button style={{ background: '#0071e3', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          Sign up free
-        </button>
-      </div>
-    </nav>
+    </header>
   );
 }
