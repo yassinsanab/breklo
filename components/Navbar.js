@@ -17,7 +17,7 @@ export default function Navbar() {
       }}>
         {/* LOGO */}
         <Link href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
-          <img src="/logo-wide.png" alt="breklo" height={28} />
+          <img src="/logo-wide.png" alt="breklo" style={{ height: 28, width: 'auto', display: 'block' }} />
         </Link>
 
         {/* NAV LINKS — centered */}

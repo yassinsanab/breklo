@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ marginBottom: 14 }}>
-              <img src="/logo-wide.png" alt="breklo" height={24} />
+              <img src="/logo-wide.png" alt="breklo" style={{ height: 22, width: 'auto', display: 'block' }} />
             </div>
             <p style={{ fontSize: 14, color: '#52525b', lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
               All-in-one file tools. PDF, image, audio and video — free and browser-based.

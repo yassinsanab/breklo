@@ -332,7 +332,7 @@ export default function EditPDF(){
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',fontFamily:"-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif",background:'#fff'}}>
       <style>{css}</style>
       <nav style={{height:52,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 20px',justifyContent:'space-between'}}>
-        <Link href="/" style={{textDecoration:'none',display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" height={22}/></Link>
+        <Link href="/" style={{textDecoration:'none',display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{ height: 20, width: 'auto', display: 'block' }} /></Link>
         <Link href="/" style={{fontSize:13,color:'#86868b',textDecoration:'none'}}>← Tools</Link>
       </nav>
       <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 24px'}}>
@@ -364,7 +364,7 @@ export default function EditPDF(){
 
       {/* TOP BAR */}
       <header style={{height:48,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 12px',gap:6,flexShrink:0,background:'#fbfbfd'}}>
-        <Link href="/" style={{textDecoration:'none',flexShrink:0,display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" height={22}/></Link>
+        <Link href="/" style={{textDecoration:'none',flexShrink:0,display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{ height: 20, width: 'auto', display: 'block' }} /></Link>
         <div style={{width:1,height:18,background:'#e5e5e5',margin:'0 4px'}}/>
         <span style={{fontSize:12,fontWeight:500,color:'#3c3c43',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{file.name}</span>
         <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
