@@ -9,8 +9,8 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 1, fontWeight: 700, fontSize: 22, color: '#fff', letterSpacing: '-.025em', marginBottom: 14 }}>
-              <span>breklo</span><span style={{ color: '#2563eb', fontSize: 26, lineHeight: 0 }}>.</span>
+            <div style={{ marginBottom: 14 }}>
+              <img src="/logo-wide.png" alt="breklo" height={24} />
             </div>
             <p style={{ fontSize: 14, color: '#52525b', lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
               All-in-one file tools. PDF, image, audio and video — free and browser-based.

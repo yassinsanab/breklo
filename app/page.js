@@ -353,16 +353,15 @@ export default function Home() {
             className={`drop${dragging ? ' drag' : ''}`}
             onDragOver={e => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
-            onDrop={e => { e.preventDefault(); setDrag(false); }}
-            onClick={() => document.getElementById('hero-file').click()}
+            onDrop={e => { e.preventDefault(); setDrag(false); window.location.href = '/edit-pdf'; }}
+            onClick={() => window.location.href = '/edit-pdf'}
           >
             <div className="drop-ic">{I.up}</div>
             <div className="drop-title">Drop your file here</div>
             <div className="drop-fmts">PDF, Word, JPG, PNG, MP4, MP3 — up to 100 MB</div>
             <div className="drop-or"><span>or</span></div>
-            <button className="btn btn-brand btn-lg" onClick={e => e.stopPropagation()}>Browse files</button>
+            <button className="btn btn-brand btn-lg" onClick={e => { e.stopPropagation(); window.location.href = '/edit-pdf'; }}>Browse files</button>
             <div className="drop-foot">100% free · No account required</div>
-            <input id="hero-file" type="file" style={{ display: 'none' }} />
           </div>
 
           <div className="trust-row">

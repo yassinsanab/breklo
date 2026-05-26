@@ -4,6 +4,7 @@ export default function sitemap() {
   const base = 'https://www.breklo.com';
 
   const tools = [
+    'edit-pdf',
     'merge-pdf','split-pdf','compress-pdf','rotate-pdf','organize-pdf',
     'extract-pdf-pages','delete-pdf-pages','password-protect-pdf',
     'pdf-to-jpg','pdf-to-png','pdf-to-text',

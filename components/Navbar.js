@@ -16,13 +16,8 @@ export default function Navbar() {
         height: 64, gap: 24,
       }}>
         {/* LOGO */}
-        <Link href="/" style={{
-          display: 'inline-flex', alignItems: 'baseline', gap: 1,
-          fontWeight: 700, letterSpacing: '-.025em', fontSize: 22, color: '#0a0a0a',
-          textDecoration: 'none', flexShrink: 0,
-        }}>
-          <span>breklo</span>
-          <span style={{ color: '#2563eb', fontSize: 26, lineHeight: 0, marginLeft: 1 }}>.</span>
+        <Link href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
+          <img src="/logo-wide.png" alt="breklo" height={28} />
         </Link>
 
         {/* NAV LINKS — centered */}
