@@ -48,7 +48,7 @@ export default function MergePDF() {
         pages.forEach(p => merged.addPage(p));
       }
       const bytes = await merged.save();
-      downloadFile(bytes, 'breklo-merged.pdf');
+      downloadFile(bytes, files[0]?.name || 'merged.pdf');
       setDone(true);
     } catch (e) {
       alert('Error merging PDFs. Please check your files.');

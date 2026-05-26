@@ -54,7 +54,7 @@ export default function SplitPDF() {
           const [page] = await newDoc.copyPages(srcDoc, [i]);
           newDoc.addPage(page);
           const bytes = await newDoc.save();
-          downloadFile(bytes, `breklo-page-${i + 1}.pdf`);
+          downloadFile(bytes, file.name, `page-${i + 1}`);
           await new Promise(r => setTimeout(r, 200));
         }
       } else {
@@ -63,7 +63,7 @@ export default function SplitPDF() {
         const pages = await newDoc.copyPages(srcDoc, indices);
         pages.forEach(p => newDoc.addPage(p));
         const bytes = await newDoc.save();
-        downloadFile(bytes, 'breklo-split.pdf');
+        downloadFile(bytes, file.name);
       }
       setDone(true);
     } catch (e) {

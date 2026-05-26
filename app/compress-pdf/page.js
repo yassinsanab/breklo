@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
 import { formatSize } from '@/lib/pdfUtils';
+import { downloadBlob } from '@/lib/download';
 
 const related = [
   { name: 'Merge PDF', slug: 'merge-pdf' },
@@ -44,7 +45,7 @@ export default function CompressPDF() {
         const saved = file.size - bytes.length;
         const pct = ((saved / file.size) * 100).toFixed(1);
         setResult({ bytes, pct: Math.max(0, pct) });
-        downloadBytes(bytes, 'breklo-compressed.pdf');
+        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), file.name);
       } else {
         // Re-render mode: render each page to JPEG then rebuild PDF
         const pdfjsLib = await import('pdfjs-dist');
@@ -81,7 +82,7 @@ export default function CompressPDF() {
         const saved = file.size - bytes.length;
         const pct = ((saved / file.size) * 100).toFixed(1);
         setResult({ bytes, pct: Math.max(0, pct) });
-        downloadBytes(bytes, 'breklo-compressed.pdf');
+        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), file.name);
       }
       setProgress('');
     } catch (e) {
@@ -90,14 +91,6 @@ export default function CompressPDF() {
       setProgress('');
     }
     setLoading(false);
-  }
-
-  function downloadBytes(bytes, name) {
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
   }
 
   return (

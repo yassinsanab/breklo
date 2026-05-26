@@ -45,7 +45,7 @@ export default function PasswordProtect() {
           documentAssembly: false,
         },
       });
-      downloadFile(bytes, 'breklo-protected.pdf');
+      downloadFile(bytes, file.name);
       setDone(true);
       setPass(''); setConfirm('');
     } catch (e) {

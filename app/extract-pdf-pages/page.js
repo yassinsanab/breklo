@@ -47,7 +47,7 @@ export default function ExtractPages() {
       const newDoc = await PDFDocument.create();
       const copied = await newDoc.copyPages(src, indices);
       copied.forEach(p => newDoc.addPage(p));
-      downloadFile(await newDoc.save(), 'breklo-extracted.pdf');
+      downloadFile(await newDoc.save(), file.name);
       setDone(true);
     } catch (e) {
       alert('Error extracting pages.');

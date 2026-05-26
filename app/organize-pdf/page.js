@@ -46,7 +46,7 @@ export default function OrganizePDF() {
       const newDoc = await PDFDocument.create();
       const copied = await newDoc.copyPages(src, order);
       copied.forEach(p => newDoc.addPage(p));
-      downloadFile(await newDoc.save(), 'breklo-organized.pdf');
+      downloadFile(await newDoc.save(), file.name);
       setDone(true);
     } catch (e) {
       alert('Error organizing PDF.');

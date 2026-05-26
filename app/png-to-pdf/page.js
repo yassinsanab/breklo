@@ -42,7 +42,7 @@ export default function PngToPdf() {
         const page = pdf.addPage([img.width, img.height]);
         page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
       }
-      downloadFile(await pdf.save(), 'breklo-converted.pdf');
+      downloadFile(await pdf.save(), files[0]?.name.replace(/\.png$/i, '.pdf') || 'converted.pdf');
       setDone(true);
     } catch (e) {
       console.error(e);

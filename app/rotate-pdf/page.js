@@ -32,7 +32,7 @@ export default function RotatePDF() {
         p.setRotation(degrees((current + angle) % 360));
       });
       const bytes = await doc.save();
-      downloadFile(bytes, 'breklo-rotated.pdf');
+      downloadFile(bytes, file.name);
       setDone(true);
     } catch (e) {
       alert('Error rotating PDF.');

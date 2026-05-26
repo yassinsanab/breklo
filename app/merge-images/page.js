@@ -75,7 +75,7 @@ export default function MergeImages() {
       const ext = outputFmt === 'image/jpeg' ? 'jpg' : outputFmt === 'image/png' ? 'png' : 'webp';
       const quality = outputFmt === 'image/png' ? undefined : 0.92;
       const blob = await new Promise(r => canvas.toBlob(r, outputFmt, quality));
-      downloadBlob(blob, `breklo-merged.${ext}`);
+      downloadBlob(blob, (files[0]?.name.replace(/\.[^/.]+$/, '') || 'merged') + '.' + ext);
       setDone(true);
     } catch (e) {
       console.error(e);

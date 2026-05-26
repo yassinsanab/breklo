@@ -99,7 +99,7 @@ export default function ImageToPdf() {
         }
       }
 
-      downloadFile(await pdf.save(), 'breklo-converted.pdf');
+      downloadFile(await pdf.save(), files[0]?.name.replace(/\.[^/.]+$/, '.pdf') || 'converted.pdf');
       setDone(true);
     } catch (e) {
       console.error(e);

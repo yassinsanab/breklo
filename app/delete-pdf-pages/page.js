@@ -48,7 +48,7 @@ export default function DeletePages() {
       const newDoc = await PDFDocument.create();
       const copied = await newDoc.copyPages(src, keep);
       copied.forEach(p => newDoc.addPage(p));
-      downloadFile(await newDoc.save(), 'breklo-deleted-pages.pdf');
+      downloadFile(await newDoc.save(), file.name);
       setDone(true);
     } catch (e) {
       alert('Error deleting pages.');

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
 import { formatSize } from '@/lib/pdfUtils';
+import { downloadBlob } from '@/lib/download';
 
 const related = [
   { name: 'PDF to PNG', slug: 'pdf-to-png' },
@@ -43,12 +44,7 @@ export default function PdfToJpg() {
         const ctx = canvas.getContext('2d');
         await page.render({ canvasContext: ctx, viewport }).promise;
         const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = total === 1 ? `${file.name.replace('.pdf', '')}.jpg` : `${file.name.replace('.pdf', '')}-page-${i}.jpg`;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, file.name.replace(/\.pdf$/i, '.jpg'), total > 1 ? `page-${i}` : '');
         await new Promise(r => setTimeout(r, 300));
       }
       setProgress(`Done — ${total} image${total > 1 ? 's' : ''} downloaded`);

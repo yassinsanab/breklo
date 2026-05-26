@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
 import { formatSize } from '@/lib/pdfUtils';
+import { downloadBlob } from '@/lib/download';
 
 const related = [
   { name: 'PDF to JPG', slug: 'pdf-to-jpg' },
@@ -50,13 +51,7 @@ export default function PdfToText() {
   }
 
   function downloadTxt() {
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name.replace('.pdf', '.txt');
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(new Blob([text], { type: 'text/plain' }), file.name.replace(/\.pdf$/i, '.txt'));
   }
 
   function copyText() {
