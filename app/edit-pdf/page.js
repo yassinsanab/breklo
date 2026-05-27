@@ -540,15 +540,15 @@ export default function EditPDF(){
           <div style={{position:'relative',boxShadow:'0 2px 20px rgba(0,0,0,.15)',borderRadius:2,flexShrink:0,userSelect:'none'}}>
             <canvas ref={pdfCv} style={{display:'block',zIndex:1,touchAction:'none'}}/>
 
-            {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:10,pointerEvents:'none'}} overflow="visible">
+            {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?20:5,pointerEvents:tool==='select'?'auto':'none'}} overflow="visible">
               {(pd.paths||[]).map(p=><g key={p.id}>
-                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent" strokeWidth={Math.max(20,p.lineWidth*zoom+10)} style={{pointerEvents:'stroke',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setSelId(p.id);}}/>
+                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent" strokeWidth={Math.max(40,(p.lineWidth||2)*zoom+20)} style={{pointerEvents:tool==='select'?'stroke':'none',cursor:'pointer',touchAction:'none'}} onPointerDown={e=>{e.preventDefault();e.stopPropagation();setSelId(p.id);}}/>
                 <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke={p.color} strokeWidth={(p.lineWidth||2)*zoom} strokeLinecap="round" strokeLinejoin="round" opacity={p.opacity||1} style={{pointerEvents:'none'}}/>
-                {selId===p.id&&(()=>{const xs=p.points.map(pt=>pt.x*zoom),ys=p.points.map(pt=>pt.y*zoom);return<rect x={Math.min(...xs)-4} y={Math.min(...ys)-4} width={Math.max(...xs)-Math.min(...xs)+8} height={Math.max(...ys)-Math.min(...ys)+8} fill="none" stroke="#0071e3" strokeWidth="1" strokeDasharray="3 3"/>;})()}
+                {selId===p.id&&(()=>{const xs=p.points.map(pt=>pt.x*zoom),ys=p.points.map(pt=>pt.y*zoom);return<rect x={Math.min(...xs)-4} y={Math.min(...ys)-4} width={Math.max(...xs)-Math.min(...xs)+8} height={Math.max(...ys)-Math.min(...ys)+8} fill="none" stroke="#0071e3" strokeWidth="1.5" strokeDasharray="4 3"/>;})()}
               </g>)}
             </svg>}
 
-            {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:20,pointerEvents:tool==='select'?'auto':'none'}}>
+            {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?30:10,pointerEvents:tool==='select'?'auto':'none'}}>
               {(pd.objs||[]).map(o=>{
                 const sel=selId===o.id;const W=(o.w||200)*zoom;const H=(o.h||60)*zoom;
                 const rotStyle=o.rotate?{transform:`rotate(${o.rotate}deg)`,transformOrigin:'center center'}:{};
@@ -596,7 +596,7 @@ export default function EditPDF(){
               })}
             </div>}
 
-            <canvas ref={liveCv} style={{position:'absolute',inset:0,zIndex:30,cursor:['draw','highlight','shape','eraser'].includes(tool)?'crosshair':'default',pointerEvents:['draw','highlight','shape','eraser'].includes(tool)?'auto':'none',touchAction:'none'}}
+            <canvas ref={liveCv} style={{position:'absolute',inset:0,zIndex:['draw','highlight','shape','eraser'].includes(tool)?30:1,cursor:['draw','highlight','shape','eraser'].includes(tool)?'crosshair':'default',pointerEvents:['draw','highlight','shape','eraser'].includes(tool)?'auto':'none',touchAction:'none'}}
               onPointerDown={drawDown} onPointerMove={drawMove} onPointerUp={drawUp} onPointerCancel={drawUp}/>
           </div>
         </div>
