@@ -1,8 +1,6 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
-import { formatSize } from '@/lib/pdfUtils';
-import { downloadBlob } from '@/lib/download';
 
 const related = [
   { name: 'Merge PDF', slug: 'merge-pdf' },
@@ -11,10 +9,16 @@ const related = [
 ];
 
 const LEVELS = [
-  { id: 'basic',  label: 'Basic',   desc: 'Fast. Removes unused objects. Best for text PDFs.',         scale: 2,   quality: 0.85 },
-  { id: 'medium', label: 'Medium',  desc: 'Good balance. Re-renders pages at reduced quality.',          scale: 1.5, quality: 0.72 },
-  { id: 'high',   label: 'High',    desc: 'Maximum compression. Best for scanned / image-heavy PDFs.',  scale: 1.2, quality: 0.55 },
+  { id: 'light',  label: 'Light',  desc: 'Good quality. Best for sharing and email.',  scale: 2.0, quality: 0.82 },
+  { id: 'medium', label: 'Medium', desc: 'Balanced. Great for most documents.',         scale: 1.5, quality: 0.62 },
+  { id: 'high',   label: 'High',   desc: 'Smallest file. Best for archiving.',          scale: 1.0, quality: 0.42 },
 ];
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 
 export default function CompressPDF() {
   const [file, setFile]         = useState(null);
@@ -24,7 +28,7 @@ export default function CompressPDF() {
   const [result, setResult]     = useState(null);
   const [dragging, setDrag]     = useState(false);
 
-  async function handleFile(f) {
+  function handleFile(f) {
     if (!f || f.type !== 'application/pdf') return;
     setFile(f); setResult(null); setProgress('');
   }
@@ -32,58 +36,59 @@ export default function CompressPDF() {
   async function compress() {
     if (!file) return;
     setLoading(true); setResult(null);
-
     try {
       const cfg = LEVELS.find(l => l.id === level);
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      const { PDFDocument } = await import('pdf-lib');
 
-      if (level === 'basic') {
-        // Fast mode: pdf-lib re-save with object streams
-        setProgress('Optimising PDF structure...');
-        const { PDFDocument } = await import('pdf-lib');
-        const doc = await PDFDocument.load(await file.arrayBuffer(), { updateMetadata: false });
-        const bytes = await doc.save({ useObjectStreams: true });
-        const saved = file.size - bytes.length;
-        const pct = ((saved / file.size) * 100).toFixed(1);
-        setResult({ bytes, pct: Math.max(0, pct) });
-        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), file.name);
-      } else {
-        // Re-render mode: render each page to JPEG then rebuild PDF
-        const pdfjsLib = await import('pdfjs-dist');
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-        const { PDFDocument } = await import('pdf-lib');
+      const arrayBuf = await file.arrayBuffer();
+      const src = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+      const total = src.numPages;
+      const newPdf = await PDFDocument.create();
 
-        const src = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-        const total = src.numPages;
-        const newPdf = await PDFDocument.create();
+      for (let i = 1; i <= total; i++) {
+        setProgress(`Compressing page ${i} of ${total}...`);
+        const page = await src.getPage(i);
+        const viewport = page.getViewport({ scale: cfg.scale });
 
-        for (let i = 1; i <= total; i++) {
-          setProgress(`Compressing page ${i} of ${total}...`);
-          const page = await src.getPage(i);
-          const viewport = page.getViewport({ scale: cfg.scale });
-          const canvas = document.createElement('canvas');
-          canvas.width  = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          await page.render({ canvasContext: ctx, viewport }).promise;
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
 
-          const jpgBuf = await new Promise(r =>
-            canvas.toBlob(b => b.arrayBuffer().then(r), 'image/jpeg', cfg.quality)
-          );
-          const img  = await newPdf.embedJpg(jpgBuf);
-          const pg   = newPdf.addPage([viewport.width, viewport.height]);
-          pg.drawImage(img, { x: 0, y: 0, width: viewport.width, height: viewport.height });
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        setProgress('Saving compressed PDF...');
-        const bytes = await newPdf.save();
-        const saved = file.size - bytes.length;
-        const pct = ((saved / file.size) * 100).toFixed(1);
-        setResult({ bytes, pct: Math.max(0, pct) });
-        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), file.name);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        const jpgBlob = await new Promise(resolve =>
+          canvas.toBlob(resolve, 'image/jpeg', cfg.quality)
+        );
+        const jpgBuf = await jpgBlob.arrayBuffer();
+
+        const origViewport = page.getViewport({ scale: 1 });
+        const img = await newPdf.embedJpg(jpgBuf);
+        const newPage = newPdf.addPage([origViewport.width, origViewport.height]);
+        newPage.drawImage(img, { x: 0, y: 0, width: origViewport.width, height: origViewport.height });
       }
+
+      setProgress('Finalizing...');
+      const bytes = await newPdf.save();
+      const newSize = bytes.length;
+      const saved = file.size - newSize;
+      const pct = parseFloat(Math.max(0, ((saved / file.size) * 100)).toFixed(1));
+
+      setResult({ bytes, size: newSize, pct });
+
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const name = file.name.replace(/\.pdf$/i, '-compressed-by-breklo.pdf');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; a.click();
+      URL.revokeObjectURL(url);
+
       setProgress('');
     } catch (e) {
       console.error(e);
@@ -93,6 +98,18 @@ export default function CompressPDF() {
     setLoading(false);
   }
 
+  function downloadResult() {
+    if (!result) return;
+    const blob = new Blob([result.bytes], { type: 'application/pdf' });
+    const name = file.name.replace(/\.pdf$/i, '-compressed-by-breklo.pdf');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const nextLevel = level === 'light' ? 'medium' : level === 'medium' ? 'high' : null;
+
   return (
     <ToolLayout
       slug="compress-pdf"
@@ -100,7 +117,7 @@ export default function CompressPDF() {
       subtitle="Significantly reduce PDF file size — choose your compression level."
       bullets={[
         'Three compression levels to choose from',
-        'Re-renders pages for maximum file size reduction',
+        'Re-renders pages as JPEG for maximum size reduction',
         'Runs entirely in your browser — no uploads',
         'Free with no file size limits',
       ]}
@@ -159,11 +176,9 @@ export default function CompressPDF() {
               </button>
             ))}
           </div>
-          {level !== 'basic' && (
-            <p style={{ fontSize: 11, color: '#f59e0b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-              ⚠ Medium / High mode converts pages to images — text will not be selectable in the output.
-            </p>
-          )}
+          <p style={{ fontSize: 11, color: '#f59e0b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+            ⚠ All modes convert pages to images. Text will not be selectable in the output.
+          </p>
         </div>
       )}
 
@@ -176,17 +191,38 @@ export default function CompressPDF() {
 
       {/* RESULT */}
       {result && (
-        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14, display: 'flex', gap: 20, alignItems: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 800, fontSize: 26, color: '#15803d', letterSpacing: '-1px' }}>
-              {result.pct > 0 ? `-${result.pct}%` : '0%'}
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '16px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ textAlign: 'center', minWidth: 64 }}>
+              <div style={{ fontWeight: 800, fontSize: 28, color: '#15803d', letterSpacing: '-1px', lineHeight: 1 }}>
+                {result.pct > 0 ? `-${result.pct}%` : '0%'}
+              </div>
+              <div style={{ fontSize: 11, color: '#166534', marginTop: 2 }}>reduction</div>
             </div>
-            <div style={{ fontSize: 11, color: '#166534' }}>reduction</div>
+            <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: 20, flex: 1 }}>
+              <div style={{ fontSize: 13, color: '#166534', marginBottom: 4 }}>Original: <strong>{formatSize(file.size)}</strong></div>
+              <div style={{ fontSize: 13, color: '#166534' }}>Compressed: <strong>{formatSize(result.size)}</strong></div>
+            </div>
           </div>
-          <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: 20 }}>
-            <div style={{ fontSize: 13, color: '#166534' }}>Original: <strong>{formatSize(file.size)}</strong></div>
-            <div style={{ fontSize: 13, color: '#166534' }}>Compressed: <strong>{formatSize(result.bytes.length)}</strong></div>
+          {/* Reduction bar */}
+          <div style={{ background: '#dcfce7', borderRadius: 6, height: 8, overflow: 'hidden', marginBottom: 14 }}>
+            <div style={{ background: '#16a34a', height: '100%', width: `${Math.min(100, result.pct)}%`, borderRadius: 6, transition: 'width .6s ease' }}/>
           </div>
+          <button onClick={downloadResult} style={{
+            width: '100%', padding: '11px', borderRadius: 9, border: 'none',
+            background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+          }}>
+            Download compressed PDF
+          </button>
+          {result.pct < 30 && nextLevel && (
+            <button onClick={() => { setLevel(nextLevel); setResult(null); }} style={{
+              width: '100%', marginTop: 8, padding: '9px', borderRadius: 9,
+              border: '1.5px solid #0071e3', background: '#fff', color: '#0071e3',
+              fontWeight: 600, fontSize: 13, cursor: 'pointer',
+            }}>
+              Try stronger compression ({LEVELS.find(l => l.id === nextLevel)?.label})
+            </button>
+          )}
         </div>
       )}
 
@@ -196,7 +232,7 @@ export default function CompressPDF() {
         color: !file ? '#9ca3af' : '#fff',
         fontWeight: 700, fontSize: 15, cursor: !file ? 'not-allowed' : 'pointer',
       }}>
-        {loading ? 'Compressing...' : result ? 'Download again' : 'Compress PDF'}
+        {loading ? 'Compressing...' : result ? 'Compress again' : 'Compress PDF'}
       </button>
     </ToolLayout>
   );
