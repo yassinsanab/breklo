@@ -118,7 +118,7 @@ function TextAnn({o,sel,zoom,rotStyle,onDrag,onHandles,upd,del}){
   return(
     <div data-ann="1" onPointerDown={e=>{if(editing)return;e.preventDefault();onDrag(e,o);}}
       onDoubleClick={e=>{e.stopPropagation();setEditing(true);setTimeout(()=>ref.current?.select(),50);}}
-      style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,cursor:editing?'text':'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,borderRadius:6,padding:'2px 4px',minWidth:30,userSelect:editing?'text':'none',zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
+      style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,cursor:editing?'text':'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,borderRadius:6,padding:'2px 4px',minWidth:30,userSelect:editing?'text':'none',WebkitUserSelect:editing?'text':'none',zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
       {editing?<textarea ref={ref} value={val} onChange={e=>setVal(e.target.value)}
         onKeyDown={e=>{if(e.key==='Escape')commit();if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();commit();}}}
         onBlur={commit} autoFocus
@@ -290,13 +290,13 @@ export default function EditPDF(){
   /* ── Drag (pointer capture) ── */
   function startDrag(e,o){
     if(e.target.dataset?.handle)return;
-    e.stopPropagation();e.preventDefault();
+    e.preventDefault();e.stopPropagation();
     setSelId(o.id);
-    const el=e.currentTarget;
-    try{el.setPointerCapture(e.pointerId);}catch{}
+    const pid=e.pointerId;const el=e.currentTarget;
+    try{el.setPointerCapture(pid);}catch(err){}
     const sx=e.clientX-o.x*zoom,sy=e.clientY-o.y*zoom;
     function mv(ev){ev.preventDefault();upd(o.id,{x:(ev.clientX-sx)/zoom,y:(ev.clientY-sy)/zoom});}
-    function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+    function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
     window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
   }
 
@@ -305,20 +305,20 @@ export default function EditPDF(){
     if(!sel)return null;
     function resize(corner,e){
       e.stopPropagation();e.preventDefault();
-      const el=e.currentTarget;try{el.setPointerCapture(e.pointerId);}catch{}
+      const pid=e.pointerId;const el=e.target;try{el.setPointerCapture(pid);}catch(err){}
       const sx=e.clientX,sy=e.clientY;const ow=o.w||200,oh=o.h||60,ox=o.x,oy=o.y;
       function mv(ev){ev.preventDefault();const dx=(ev.clientX-sx)/zoom,dy=(ev.clientY-sy)/zoom;let u={};
         if(corner.includes('e'))u.w=Math.max(20,ow+dx);if(corner.includes('s'))u.h=Math.max(20,oh+dy);
         if(corner.includes('w')){u.x=ox+dx;u.w=Math.max(20,ow-dx);}if(corner.includes('n')){u.y=oy+dy;u.h=Math.max(20,oh-dy);}upd(o.id,u);}
-      function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+      function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
     function rotate(e){
       e.stopPropagation();e.preventDefault();
-      const el=e.currentTarget;try{el.setPointerCapture(e.pointerId);}catch{}
+      const pid=e.pointerId;const el=e.target;try{el.setPointerCapture(pid);}catch(err){}
       const rect=pdfCv.current.getBoundingClientRect();
       const cx=(o.x+(o.w||200)/2)*zoom,cy=(o.y+(o.h||60)/2)*zoom;
       function mv(ev){ev.preventDefault();const mx=ev.clientX-rect.left-cx,my=ev.clientY-rect.top-cy;upd(o.id,{rotate:Math.round(Math.atan2(my,mx)*180/Math.PI+90)});}
-      function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+      function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
 
     const hs={position:'absolute',width:8,height:8,background:'#fff',border:'1.5px solid #0071e3',borderRadius:8,zIndex:10,touchAction:'none'};
@@ -331,7 +331,7 @@ export default function EditPDF(){
         </div>
         <div style={{width:1,height:10,background:'#0071e3'}}/>
       </div>
-      <button data-handle="1" onPointerDown={e=>{e.stopPropagation();del(o.id);}} style={{position:'absolute',top:-8,right:-8,width:16,height:16,borderRadius:16,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0,touchAction:'none'}}>
+      <button data-handle="1" onPointerDown={e=>{e.preventDefault();e.stopPropagation();del(o.id);}} style={{position:'absolute',top:-8,right:-8,width:16,height:16,borderRadius:16,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0,touchAction:'none'}}>
         <Ic d="M18 6L6 18M6 6l12 12" size={7} sw={3}/>
       </button>
     </>;
@@ -548,7 +548,7 @@ export default function EditPDF(){
               </g>)}
             </svg>}
 
-            {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:20,pointerEvents:'none'}}>
+            {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:20,pointerEvents:tool==='select'?'auto':'none'}}>
               {(pd.objs||[]).map(o=>{
                 const sel=selId===o.id;const W=(o.w||200)*zoom;const H=(o.h||60)*zoom;
                 const rotStyle=o.rotate?{transform:`rotate(${o.rotate}deg)`,transformOrigin:'center center'}:{};
@@ -560,14 +560,14 @@ export default function EditPDF(){
                   return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
                     style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',background:o.color+opHex,
                       border:o.border?`${(o.borderWidth||1.5)*zoom}px solid ${o.borderColor||'#d97706'}`:'none',
-                      borderRadius:3,outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
+                      borderRadius:3,outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',WebkitUserSelect:'none',userSelect:'none',...rotStyle}}>
                     {renderHandles(o,sel)}
                   </div>;
                 }
 
                 if(o.type==='shape'){const sw=(o.lineWidth||2)*zoom;
                   return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
-                    style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
+                    style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',WebkitUserSelect:'none',userSelect:'none',...rotStyle}}>
                     <svg width={W} height={H} style={{display:'block',overflow:'visible',pointerEvents:'none'}}>
                       {o.shape==='rectangle'&&<rect x={sw/2} y={sw/2} width={W-sw} height={H-sw} stroke={o.color} strokeWidth={sw} fill="none"/>}
                       {o.shape==='circle'&&<circle cx={W/2} cy={H/2} r={Math.min(W,H)/2-sw/2} stroke={o.color} strokeWidth={sw} fill="none"/>}
@@ -581,13 +581,13 @@ export default function EditPDF(){
                 }
 
                 if(o.type==='sign-img'||o.type==='image')return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
-                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
+                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',WebkitUserSelect:'none',userSelect:'none',...rotStyle}}>
                   <img src={o.dataUrl} style={{width:'100%',height:'100%',objectFit:'contain',pointerEvents:'none'}} alt="" draggable={false}/>
                   {renderHandles(o,sel)}
                 </div>;
 
                 if(o.type==='sign-text')return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
-                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',display:'flex',alignItems:'center',touchAction:'none',...rotStyle}}>
+                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',display:'flex',alignItems:'center',touchAction:'none',WebkitUserSelect:'none',userSelect:'none',...rotStyle}}>
                   <span style={{fontFamily:o.font,fontSize:Math.min(W/4,H*.7),color:o.color||'#0a0a0a',pointerEvents:'none',whiteSpace:'nowrap'}}>{o.text}</span>
                   {renderHandles(o,sel)}
                 </div>;
