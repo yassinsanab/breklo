@@ -30,7 +30,7 @@ const TOOLS=[
 const Ic=({d,size=17,sw=1.5})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{[].concat(d).map((p,i)=><path key={i} d={p}/>)}</svg>;
 let _uid=0;const uid=()=>`a${++_uid}_${Date.now()}`;
 
-/* ─── SIGN MODAL — 2x canvas, clean Apple style ──────────── */
+/* ─── SIGN MODAL ──────────────────────── */
 function SignModal({onClose,onApply}){
   const cv=useRef(null);const dr=useRef(false);
   const [mode,setMode]=useState('draw');
@@ -46,10 +46,10 @@ function SignModal({onClose,onApply}){
   useEffect(init,[]);
   useEffect(()=>{const c=cv.current;if(!c)return;const x=c.getContext('2d');x.strokeStyle=col;x.lineWidth=thick*2;},[col,thick]);
 
-  function pos(e){const r=cv.current.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(960/r.width),y:(t.clientY-r.top)*(320/r.height)};}
-  function dn(e){e.preventDefault();dr.current=true;const p=pos(e);const x=cv.current.getContext('2d');x.beginPath();x.moveTo(p.x,p.y);}
+  function pos(e){const r=cv.current.getBoundingClientRect();return{x:(e.clientX-r.left)*(960/r.width),y:(e.clientY-r.top)*(320/r.height)};}
+  function dn(e){e.preventDefault();dr.current=true;try{cv.current.setPointerCapture(e.pointerId);}catch{}const p=pos(e);const x=cv.current.getContext('2d');x.beginPath();x.moveTo(p.x,p.y);}
   function mv(e){if(!dr.current)return;e.preventDefault();const p=pos(e);const x=cv.current.getContext('2d');x.lineTo(p.x,p.y);x.stroke();}
-  function up(){dr.current=false;}
+  function up(e){dr.current=false;try{cv.current?.releasePointerCapture(e.pointerId);}catch{}}
 
   function apply(){
     if(mode==='draw')onApply({type:'sign-img',dataUrl:cv.current.toDataURL('image/png')});
@@ -62,23 +62,20 @@ function SignModal({onClose,onApply}){
       <div style={{background:'#fff',borderRadius:16,width:'100%',maxWidth:520,boxShadow:'0 24px 64px rgba(0,0,0,.15)'}}>
         <div style={{padding:'20px 24px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid #f0f0f0'}}>
           <span style={{fontSize:16,fontWeight:600,color:'#1d1d1f',letterSpacing:'-.02em'}}>Signature</span>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'#86868b',display:'flex',padding:4,borderRadius:6}} onMouseEnter={e=>e.currentTarget.style.background='#f5f5f7'} onMouseLeave={e=>e.currentTarget.style.background='none'}><Ic d="M18 6L6 18M6 6l12 12" size={18}/></button>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'#86868b',display:'flex',padding:4,borderRadius:6}}><Ic d="M18 6L6 18M6 6l12 12" size={18}/></button>
         </div>
-
-        <div style={{display:'flex',gap:0,padding:'0',borderBottom:'1px solid #f0f0f0'}}>
+        <div style={{display:'flex',borderBottom:'1px solid #f0f0f0'}}>
           {[['draw','Draw'],['type','Type']].map(([id,lb])=>(
             <button key={id} onClick={()=>setMode(id)} style={{flex:1,padding:'12px 0',fontSize:13,fontWeight:500,cursor:'pointer',border:'none',borderBottom:`2px solid ${mode===id?'#0071e3':'transparent'}`,background:'none',color:mode===id?'#0071e3':'#86868b',fontFamily:'inherit',transition:'all .15s'}}>{lb}</button>
           ))}
         </div>
-
         <div style={{padding:'20px 24px'}}>
           {mode==='draw'?(
             <>
               <div style={{position:'relative',marginBottom:14}}>
                 <div style={{position:'absolute',inset:0,borderRadius:10,background:'repeating-conic-gradient(#f5f5f7 0% 25%,#fff 0% 50%) 0 0/14px 14px'}}/>
                 <canvas ref={cv} style={{width:'100%',height:160,border:'1px solid #d2d2d7',borderRadius:10,cursor:'crosshair',display:'block',touchAction:'none',position:'relative'}}
-                  onMouseDown={dn} onMouseMove={mv} onMouseUp={up} onMouseLeave={up}
-                  onTouchStart={dn} onTouchMove={mv} onTouchEnd={up}/>
+                  onPointerDown={dn} onPointerMove={mv} onPointerUp={up} onPointerCancel={up}/>
               </div>
               <div style={{display:'flex',gap:12,alignItems:'center'}}>
                 <div style={{display:'flex',gap:5}}>{['#0a0a0a','#0071e3','#dc2626','#16a34a'].map(c=><button key={c} onClick={()=>setCol(c)} style={{width:22,height:22,borderRadius:'50%',background:c,border:col===c?'2px solid #0071e3':'2px solid #d2d2d7',cursor:'pointer',transition:'all .15s'}}/>)}</div>
@@ -111,7 +108,7 @@ function SignModal({onClose,onApply}){
   );
 }
 
-/* ─── TEXT COMPONENT (proper hooks) ──────────────────────── */
+/* ─── TEXT COMPONENT ──────────────────────── */
 function TextAnn({o,sel,zoom,rotStyle,onDrag,onHandles,upd,del}){
   const [editing,setEditing]=useState(false);
   const [val,setVal]=useState(o.text);
@@ -119,9 +116,9 @@ function TextAnn({o,sel,zoom,rotStyle,onDrag,onHandles,upd,del}){
   useEffect(()=>{if(!editing)setVal(o.text);},[o.text,editing]);
   function commit(){setEditing(false);if(val.trim())upd(o.id,{text:val});else del(o.id);}
   return(
-    <div data-ann="1" onMouseDown={e=>{if(editing)return;onDrag(e,o);}}
+    <div data-ann="1" onPointerDown={e=>{if(editing)return;e.preventDefault();onDrag(e,o);}}
       onDoubleClick={e=>{e.stopPropagation();setEditing(true);setTimeout(()=>ref.current?.select(),50);}}
-      style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,cursor:editing?'text':'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,borderRadius:6,padding:'2px 4px',minWidth:30,userSelect:editing?'text':'none',zIndex:sel?40:25,pointerEvents:'auto',...rotStyle}}>
+      style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,cursor:editing?'text':'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,borderRadius:6,padding:'2px 4px',minWidth:30,userSelect:editing?'text':'none',zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
       {editing?<textarea ref={ref} value={val} onChange={e=>setVal(e.target.value)}
         onKeyDown={e=>{if(e.key==='Escape')commit();if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();commit();}}}
         onBlur={commit} autoFocus
@@ -132,8 +129,6 @@ function TextAnn({o,sel,zoom,rotStyle,onDrag,onHandles,upd,del}){
   );
 }
 
-/* ════════════════════════════════════════════════════════════ */
-/*  MAIN EDITOR                                                */
 /* ════════════════════════════════════════════════════════════ */
 export default function EditPDF(){
   const [file,setFile]=useState(null);
@@ -195,8 +190,15 @@ export default function EditPDF(){
 
   async function loadPdf(f){
     if(!f||f.type!=='application/pdf')return;setLoading(true);setFile(f);setData({});setSelId(null);hist.current=[];rdo.current=[];setPg(1);
-    try{const pdfjs=await import('pdfjs-dist');pdfjs.GlobalWorkerOptions.workerSrc=`//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-      pdfjsDoc.current=await pdfjs.getDocument({data:await f.arrayBuffer()}).promise;setNumPg(pdfjsDoc.current.numPages);
+    try{
+      const pdfjs=await import('pdfjs-dist');pdfjs.GlobalWorkerOptions.workerSrc=`//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+      pdfjsDoc.current=await pdfjs.getDocument({data:await f.arrayBuffer()}).promise;
+      const firstPage=await pdfjsDoc.current.getPage(1);
+      const vpBase=firstPage.getViewport({scale:1});
+      const isMobile=typeof window!=='undefined'&&window.innerWidth<768;
+      const fitZoom=isMobile?Math.min((window.innerWidth-32)/vpBase.width,1.0):1.4;
+      setZoom(fitZoom);
+      setNumPg(pdfjsDoc.current.numPages);
     }catch{alert('Could not open PDF.');}setLoading(false);}
 
   useEffect(()=>{if(!pdfjsDoc.current)return;
@@ -210,8 +212,8 @@ export default function EditPDF(){
     pdfjsDoc.current.getPage(i).then(p=>{const v=p.getViewport({scale:.12});c.width=v.width;c.height=v.height;p.render({canvasContext:c.getContext('2d'),viewport:v});});}
   },[numPg]);
 
-  function getPos(e){const c=pdfCv.current;if(!c)return{x:0,y:0};const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)/zoom,y:(t.clientY-r.top)/zoom};}
-  function getSP(e){const c=pdfCv.current;if(!c)return{x:0,y:0};const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+  function getPos(e){const c=pdfCv.current;if(!c)return{x:0,y:0};const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)/zoom,y:(e.clientY-r.top)/zoom};}
+  function getSP(e){const c=pdfCv.current;if(!c)return{x:0,y:0};const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
 
   function handleClick(e){
     if(e.target.closest('[data-ann]'))return;
@@ -222,7 +224,7 @@ export default function EditPDF(){
     if(tool==='image'){window.__imgPos=pos;document.getElementById('img-input').click();return;}
   }
 
-  function drawDown(e){if(['select','text','sign','image'].includes(tool))return;e.preventDefault();e.stopPropagation();isDrawing.current=true;livePts.current=[getSP(e)];shapeOrig.current=getSP(e);}
+  function drawDown(e){if(['select','text','sign','image'].includes(tool))return;e.preventDefault();e.stopPropagation();try{e.target.setPointerCapture(e.pointerId);}catch{}isDrawing.current=true;livePts.current=[getSP(e)];shapeOrig.current=getSP(e);}
   function drawMove(e){if(!isDrawing.current)return;e.preventDefault();const sp=getSP(e);livePts.current.push(sp);
     const c=liveCv.current;if(!c)return;const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.save();
     if(tool==='draw'){const pts=livePts.current;ctx.strokeStyle=color;ctx.lineWidth=lineW*zoom;ctx.lineCap='round';ctx.lineJoin='round';
@@ -243,7 +245,7 @@ export default function EditPDF(){
       ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();}
     ctx.restore();}
 
-  function drawUp(e){if(!isDrawing.current)return;isDrawing.current=false;const sp=getSP(e);
+  function drawUp(e){if(!isDrawing.current)return;isDrawing.current=false;try{e.target.releasePointerCapture(e.pointerId);}catch{}const sp=getSP(e);
     const c=liveCv.current;if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
     if(tool==='draw'&&livePts.current.length>=2){addPath({points:livePts.current.map(p=>({x:p.x/zoom,y:p.y/zoom})),color,lineWidth:lineW,opacity:1});}
     else if(tool==='highlight'){const s=shapeOrig.current;const w=(sp.x-s.x)/zoom,h=(sp.y-s.y)/zoom;if(Math.abs(w)<3||Math.abs(h)<3)return;
@@ -285,45 +287,57 @@ export default function EditPDF(){
 
   const pd=gp(pg);const selObj=[...pd.objs,...pd.paths].find(o=>o.id===selId);
 
-  /* ── Drag helper ── */
-  function startDrag(e,o){if(e.target.dataset?.handle)return;e.stopPropagation();setSelId(o.id);
+  /* ── Drag (pointer capture) ── */
+  function startDrag(e,o){
+    if(e.target.dataset?.handle)return;
+    e.stopPropagation();e.preventDefault();
+    setSelId(o.id);
+    const el=e.currentTarget;
+    try{el.setPointerCapture(e.pointerId);}catch{}
     const sx=e.clientX-o.x*zoom,sy=e.clientY-o.y*zoom;
-    function mv(ev){upd(o.id,{x:(ev.clientX-sx)/zoom,y:(ev.clientY-sy)/zoom});}
-    function up(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);}
-    window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);}
+    function mv(ev){ev.preventDefault();upd(o.id,{x:(ev.clientX-sx)/zoom,y:(ev.clientY-sy)/zoom});}
+    function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+  }
 
   /* ── Handles (resize + rotate + delete) ── */
   function renderHandles(o,sel){
     if(!sel)return null;
-    function resize(corner,e){e.stopPropagation();e.preventDefault();const sx=e.clientX,sy=e.clientY;const ow=o.w||200,oh=o.h||60,ox=o.x,oy=o.y;
-      function mv(ev){const dx=(ev.clientX-sx)/zoom,dy=(ev.clientY-sy)/zoom;let u={};
+    function resize(corner,e){
+      e.stopPropagation();e.preventDefault();
+      const el=e.currentTarget;try{el.setPointerCapture(e.pointerId);}catch{}
+      const sx=e.clientX,sy=e.clientY;const ow=o.w||200,oh=o.h||60,ox=o.x,oy=o.y;
+      function mv(ev){ev.preventDefault();const dx=(ev.clientX-sx)/zoom,dy=(ev.clientY-sy)/zoom;let u={};
         if(corner.includes('e'))u.w=Math.max(20,ow+dx);if(corner.includes('s'))u.h=Math.max(20,oh+dy);
         if(corner.includes('w')){u.x=ox+dx;u.w=Math.max(20,ow-dx);}if(corner.includes('n')){u.y=oy+dy;u.h=Math.max(20,oh-dy);}upd(o.id,u);}
-      function up(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);}
-      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);}
-    function rotate(e){e.stopPropagation();e.preventDefault();const rect=pdfCv.current.getBoundingClientRect();
+      function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+      window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
+    function rotate(e){
+      e.stopPropagation();e.preventDefault();
+      const el=e.currentTarget;try{el.setPointerCapture(e.pointerId);}catch{}
+      const rect=pdfCv.current.getBoundingClientRect();
       const cx=(o.x+(o.w||200)/2)*zoom,cy=(o.y+(o.h||60)/2)*zoom;
-      function mv(ev){const mx=ev.clientX-rect.left-cx,my=ev.clientY-rect.top-cy;upd(o.id,{rotate:Math.round(Math.atan2(my,mx)*180/Math.PI+90)});}
-      function up(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);}
-      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);}
+      function mv(ev){ev.preventDefault();const mx=ev.clientX-rect.left-cx,my=ev.clientY-rect.top-cy;upd(o.id,{rotate:Math.round(Math.atan2(my,mx)*180/Math.PI+90)});}
+      function up(ev){try{el.releasePointerCapture(ev.pointerId);}catch{}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+      window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
 
-    const hs={position:'absolute',width:8,height:8,background:'#fff',border:'1.5px solid #0071e3',borderRadius:8,zIndex:10};
+    const hs={position:'absolute',width:8,height:8,background:'#fff',border:'1.5px solid #0071e3',borderRadius:8,zIndex:10,touchAction:'none'};
     return<>
       {[['nw',{left:-4,top:-4},'nwse-resize'],['ne',{right:-4,top:-4},'nesw-resize'],['sw',{left:-4,bottom:-4},'nesw-resize'],['se',{right:-4,bottom:-4},'nwse-resize']].map(([c,s,cur])=>
-        <div key={c} data-handle="1" onMouseDown={e=>resize(c,e)} style={{...hs,...s,cursor:cur}}/>)}
+        <div key={c} data-handle="1" onPointerDown={e=>resize(c,e)} style={{...hs,...s,cursor:cur}}/>)}
       <div style={{position:'absolute',top:-30,left:'50%',marginLeft:-7,display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div data-handle="1" onMouseDown={rotate} style={{width:14,height:14,borderRadius:14,background:'#fff',border:'1.5px solid #0071e3',cursor:'grab',boxShadow:'0 1px 4px rgba(0,0,0,.15)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div data-handle="1" onPointerDown={rotate} style={{width:14,height:14,borderRadius:14,background:'#fff',border:'1.5px solid #0071e3',cursor:'grab',boxShadow:'0 1px 4px rgba(0,0,0,.15)',display:'flex',alignItems:'center',justifyContent:'center',touchAction:'none'}}>
           <Ic d="M23 4v6h-6M23 10A10 10 0 0 0 4 6" size={7} sw={2.5}/>
         </div>
         <div style={{width:1,height:10,background:'#0071e3'}}/>
       </div>
-      <button data-handle="1" onMouseDown={e=>{e.stopPropagation();del(o.id);}} style={{position:'absolute',top:-8,right:-8,width:16,height:16,borderRadius:16,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0}}>
+      <button data-handle="1" onPointerDown={e=>{e.stopPropagation();del(o.id);}} style={{position:'absolute',top:-8,right:-8,width:16,height:16,borderRadius:16,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0,touchAction:'none'}}>
         <Ic d="M18 6L6 18M6 6l12 12" size={7} sw={3}/>
       </button>
     </>;
   }
 
-  /* ── Right panel content (shared between desktop panel and mobile sheet) ── */
+  /* ── Panel content ── */
   function renderPanelContent(){
     return(
       <>
@@ -341,23 +355,19 @@ export default function EditPDF(){
             <input type="range" min="0.5" max="5" step="0.5" value={hlBorderW} onChange={e=>setHlBorderW(parseFloat(e.target.value))} style={{width:'100%'}}/>
           </div>}
         </div>}
-
         {tool==='shape'&&<div>
           <div className="panel-lbl">Shape</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>{SHAPES.map(s=><button key={s.id} onClick={()=>setShape(s.id)} style={{padding:'7px 0',borderRadius:8,border:`1px solid ${shape===s.id?'#0071e3':'#d2d2d7'}`,background:shape===s.id?'#e8f0fe':'#fff',color:shape===s.id?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:11,fontWeight:shape===s.id?500:400}}>{s.l}</button>)}</div>
         </div>}
-
         <div>
           <div className="panel-lbl">Color</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>{COLORS.map(c=><button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:22,height:22,borderRadius:22,background:c,border:color===c?'2px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',boxShadow:c==='#ffffff'?'inset 0 0 0 1px #e5e5e5':'none',transform:color===c?'scale(1.15)':'scale(1)',transition:'all .15s'}}/>)}</div>
           <div style={{display:'flex',alignItems:'center',gap:6}}><input type="color" value={color} onChange={e=>{setColor(e.target.value);if(selId)upd(selId,{color:e.target.value});}} style={{width:22,height:22,border:'1px solid #d2d2d7',borderRadius:6,cursor:'pointer',padding:1}}/><span style={{fontSize:11,color:'#86868b',fontFamily:'monospace'}}>{color}</span></div>
         </div>
-
         {['draw','shape'].includes(tool)&&<div>
           <div className="panel-lbl">Stroke {lineW}px</div>
           <input type="range" min="0.5" max="16" step=".5" value={lineW} onChange={e=>setLineW(parseFloat(e.target.value))} style={{width:'100%'}}/>
         </div>}
-
         {(tool==='text'||selObj?.type==='text')&&<div>
           <div className="panel-lbl">Size {selObj?.fontSize||fontSize}px</div>
           <input type="range" min="8" max="96" value={selObj?.fontSize||fontSize} onChange={e=>{const v=parseInt(e.target.value);setFS(v);if(selId)upd(selId,{fontSize:v});}} style={{width:'100%',marginBottom:8}}/>
@@ -365,7 +375,6 @@ export default function EditPDF(){
           <select value={selObj?.font||font} onChange={e=>{setFont(e.target.value);if(selId)upd(selId,{font:e.target.value});}} style={{width:'100%',padding:'7px 9px',border:'1px solid #d2d2d7',borderRadius:8,fontSize:12.5,fontFamily:'inherit',outline:'none',cursor:'pointer',marginBottom:6}}>{FONTS.map(f=><option key={f.l} value={f.v}>{f.l}</option>)}</select>
           <div style={{display:'flex',gap:4}}>{[['B','bold',bold,setBold,{fontWeight:700}],['I','italic',italic,setItalic,{fontStyle:'italic'}]].map(([l,p,v,s,st])=><button key={l} onClick={()=>{s(!v);if(selId)upd(selId,{[p]:!v});}} style={{flex:1,padding:'6px',borderRadius:8,border:`1px solid ${v?'#0071e3':'#d2d2d7'}`,background:v?'#e8f0fe':'#fff',color:v?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:14,...st}}>{l}</button>)}</div>
         </div>}
-
         {selObj?.type==='highlight'&&<div>
           <div className="panel-lbl">Opacity {Math.round((selObj.opacity??0.35)*100)}%</div>
           <input type="range" min="0.05" max="1" step="0.05" value={selObj.opacity??0.35} onChange={e=>upd(selId,{opacity:parseFloat(e.target.value)})} style={{width:'100%'}}/>
@@ -377,13 +386,11 @@ export default function EditPDF(){
             <input type="range" min="0.5" max="5" step="0.5" value={selObj.borderWidth||1.5} onChange={e=>upd(selId,{borderWidth:parseFloat(e.target.value)})} style={{width:'100%'}}/>
           </div>}
         </div>}
-
         {selObj&&selObj.rotate!==undefined&&<div>
           <div className="panel-lbl">Rotate {selObj.rotate||0}°</div>
           <input type="range" min="-180" max="180" step="1" value={selObj.rotate||0} onChange={e=>upd(selId,{rotate:parseInt(e.target.value)})} style={{width:'100%'}}/>
           <button onClick={()=>upd(selId,{rotate:0})} style={{marginTop:4,fontSize:11,color:'#86868b',background:'#f5f5f7',border:'none',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Reset</button>
         </div>}
-
         {selObj&&<div style={{display:'flex',gap:4}}>
           <button onClick={()=>dup(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #d2d2d7',background:'#fff',color:'#3c3c43',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Duplicate</button>
           <button onClick={()=>del(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #fecaca',background:'#fff1f2',color:'#ff3b30',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Delete</button>
@@ -392,9 +399,10 @@ export default function EditPDF(){
     );
   }
 
-  /* ── Apple-style CSS ── */
+  /* ── CSS ── */
   const css=`
     @import url('${GF}');
+    html{overscroll-behavior:none}
     *{box-sizing:border-box;margin:0;padding:0}body{overflow:hidden}
     .tb{background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border-radius:8px;transition:all .15s;font-family:inherit;height:36px;padding:0 10px;width:100%;color:#3c3c43}
     .tb:hover{background:#f5f5f7}.tb.on{background:#e8f0fe;color:#0071e3}
@@ -405,17 +413,19 @@ export default function EditPDF(){
     input[type=range]{-webkit-appearance:none;height:3px;background:#d2d2d7;border-radius:3px;outline:none}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:16px;background:#fff;border:1px solid #d2d2d7;box-shadow:0 1px 3px rgba(0,0,0,.15);cursor:pointer}
     select{-webkit-appearance:none;background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:28px}
-    .editor-mobile-toolbar{display:none;overflow-x:auto;white-space:nowrap;background:#fbfbfd;border-bottom:1px solid #e5e5e5;padding:0 8px;gap:4px;align-items:center;height:48px;flex-shrink:0;scrollbar-width:none;-ms-overflow-style:none}
-    .editor-mobile-toolbar::-webkit-scrollbar{display:none}
-    .mtb{background:none;border:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;border-radius:16px;transition:all .15s;font-family:inherit;height:36px;padding:0 10px;white-space:nowrap;color:#3c3c43;flex-shrink:0;font-size:12px}
-    .mtb:hover{background:#f5f5f7}.mtb.on{background:#e8f0fe;color:#0071e3}
-    .editor-mobile-fab{display:none;position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#0071e3;color:#fff;border:none;box-shadow:0 4px 20px rgba(0,113,227,.45);cursor:pointer;align-items:center;justify-content:center;z-index:200}
+    .pdf-edit-area{touch-action:none !important;-webkit-overflow-scrolling:auto !important;overscroll-behavior:none !important}
+    .pdf-edit-area *{touch-action:none !important}
+    [data-ann]{touch-action:none !important;cursor:move !important}
+    .mobile-toolbar{display:none;overflow-x:auto;white-space:nowrap;background:#fbfbfd;border-bottom:1px solid #e5e5e5;padding:0 8px;gap:2px;align-items:center;height:48px;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+    .mobile-toolbar::-webkit-scrollbar{display:none}
+    .editor-mobile-fab{display:none;position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#0071e3;color:#fff;border:none;box-shadow:0 4px 20px rgba(0,113,227,.45);cursor:pointer;align-items:center;justify-content:center;z-index:200;touch-action:none}
     .show-mobile{display:none !important}
     @media (max-width:768px){
       .editor-tools-sidebar{display:none !important}
       .editor-thumbs-sidebar{display:none !important}
-      .editor-right-panel{display:none !important}
-      .editor-mobile-toolbar{display:flex !important}
+      .editor-right-panel{position:fixed !important;bottom:0 !important;left:0 !important;right:0 !important;width:100% !important;max-height:50vh !important;border-radius:16px 16px 0 0 !important;box-shadow:0 -4px 20px rgba(0,0,0,.15) !important;z-index:100 !important;transform:translateY(100%);transition:transform .3s ease !important}
+      .editor-right-panel.open{transform:translateY(0) !important}
+      .mobile-toolbar{display:flex !important}
       .editor-top-bar{flex-wrap:wrap;height:auto !important;min-height:44px;padding:6px 8px !important;gap:4px !important}
       .editor-top-bar .hide-mobile{display:none !important}
       .editor-canvas-area{padding:8px !important}
@@ -423,7 +433,7 @@ export default function EditPDF(){
       .show-mobile{display:flex !important}
     }
     @media (min-width:769px){
-      .editor-mobile-toolbar{display:none !important}
+      .mobile-toolbar{display:none !important}
       .editor-mobile-fab{display:none !important}
     }
   `;
@@ -433,7 +443,7 @@ export default function EditPDF(){
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',fontFamily:"-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif",background:'#fff'}}>
       <style>{css}</style>
       <nav style={{height:52,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 20px',justifyContent:'space-between'}}>
-        <Link href="/" style={{textDecoration:'none',display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{ height: 20, width: 'auto', display: 'block' }} /></Link>
+        <Link href="/" style={{textDecoration:'none',display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{height:20,width:'auto',display:'block'}}/></Link>
         <Link href="/" style={{fontSize:13,color:'#86868b',textDecoration:'none'}}>← Tools</Link>
       </nav>
       <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 24px'}}>
@@ -465,7 +475,7 @@ export default function EditPDF(){
 
       {/* TOP BAR */}
       <header className="editor-top-bar" style={{height:48,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 12px',gap:6,flexShrink:0,background:'#fbfbfd'}}>
-        <Link href="/" style={{textDecoration:'none',flexShrink:0,display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{ height: 20, width: 'auto', display: 'block' }} /></Link>
+        <Link href="/" style={{textDecoration:'none',flexShrink:0,display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{height:20,width:'auto',display:'block'}}/></Link>
         <div className="hide-mobile" style={{width:1,height:18,background:'#e5e5e5',margin:'0 4px'}}/>
         <span className="hide-mobile" style={{fontSize:12,fontWeight:500,color:'#3c3c43',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{file.name}</span>
         <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
@@ -484,21 +494,22 @@ export default function EditPDF(){
         <button onClick={savePdf} disabled={saving} style={{background:'#0071e3',color:'#fff',border:'none',borderRadius:20,padding:'0 16px',height:30,display:'flex',alignItems:'center',gap:5,cursor:saving?'wait':'pointer',fontSize:13,fontWeight:500,fontFamily:'inherit',flexShrink:0}}>
           <Ic d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" size={12} sw={2}/>{saving?'Saving…':'Download'}
         </button>
-        <button className="show-mobile" onClick={()=>setShowMobileProps(true)} style={{background:'none',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',color:'#3c3c43',alignItems:'center',justifyContent:'center',flexShrink:0,padding:0}}>
+        <button className="show-mobile" onClick={()=>setShowMobileProps(v=>!v)} style={{background:'none',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',color:'#3c3c43',alignItems:'center',justifyContent:'center',flexShrink:0,padding:0}}>
           <Ic d="M3 12h18M3 6h18M3 18h18" size={18}/>
         </button>
       </header>
 
       {/* MOBILE TOOLBAR */}
-      <div className="editor-mobile-toolbar">
+      <div className="mobile-toolbar">
         {TOOLS.map(t=>(
-          <button key={t.id} className={`mtb${tool===t.id?' on':''}`} onClick={()=>setTool(t.id)}>
-            <Ic d={t.ic} size={15}/><span>{t.l}</span>
+          <button key={t.id} onClick={()=>setTool(t.id)}
+            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,border:'none',background:tool===t.id?'#e8f0fe':'transparent',color:tool===t.id?'#0071e3':'#3c3c43',fontSize:12,fontWeight:tool===t.id?600:400,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap',flexShrink:0}}>
+            <Ic d={t.ic} size={14}/>{t.l}
           </button>
         ))}
-        <div style={{width:1,height:28,background:'#e5e5e5',margin:'0 4px',flexShrink:0}}/>
-        {COLORS.slice(0,6).map(c=>(
-          <button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:24,height:24,borderRadius:'50%',background:c,border:color===c?'2.5px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',flexShrink:0,boxShadow:c==='#ffffff'?'inset 0 0 0 1px #e5e5e5':'none',transform:color===c?'scale(1.2)':'scale(1)',transition:'all .15s'}}/>
+        <div style={{width:1,height:24,background:'#e5e5e5',margin:'0 4px',flexShrink:0}}/>
+        {COLORS.slice(0,8).map(c=>(
+          <button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:24,height:24,borderRadius:24,background:c,border:color===c?'2px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',flexShrink:0}}/>
         ))}
       </div>
 
@@ -523,13 +534,12 @@ export default function EditPDF(){
         </div>
 
         {/* MAIN CANVAS */}
-        <div className="editor-canvas-area" style={{flex:1,overflow:'auto',background:'#e5e5ea',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:20}} onClick={handleClick}>
+        <div className="editor-canvas-area pdf-edit-area" style={{flex:1,overflow:'auto',background:'#e5e5ea',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:20,touchAction:'none',overscrollBehavior:'none',WebkitOverflowScrolling:'auto'}} onClick={handleClick}>
           {loading&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(245,245,247,.8)',zIndex:100,backdropFilter:'blur(6px)'}}><div style={{background:'#fff',borderRadius:14,padding:'16px 24px',fontSize:14,fontWeight:500,color:'#1d1d1f',boxShadow:'0 4px 16px rgba(0,0,0,.08)'}}>Loading…</div></div>}
 
           <div style={{position:'relative',boxShadow:'0 2px 20px rgba(0,0,0,.15)',borderRadius:2,flexShrink:0,userSelect:'none'}}>
-            <canvas ref={pdfCv} style={{display:'block',zIndex:1}}/>
+            <canvas ref={pdfCv} style={{display:'block',zIndex:1,touchAction:'none'}}/>
 
-            {/* SVG paths */}
             {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:10,pointerEvents:'none'}} overflow="visible">
               {(pd.paths||[]).map(p=><g key={p.id}>
                 <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent" strokeWidth={Math.max(20,p.lineWidth*zoom+10)} style={{pointerEvents:'stroke',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setSelId(p.id);}}/>
@@ -538,7 +548,6 @@ export default function EditPDF(){
               </g>)}
             </svg>}
 
-            {/* DOM objects */}
             {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:20,pointerEvents:'none'}}>
               {(pd.objs||[]).map(o=>{
                 const sel=selId===o.id;const W=(o.w||200)*zoom;const H=(o.h||60)*zoom;
@@ -548,17 +557,17 @@ export default function EditPDF(){
 
                 if(o.type==='highlight'){
                   const opHex=Math.round((o.opacity??0.35)*255).toString(16).padStart(2,'0');
-                  return<div key={o.id} data-ann="1" onMouseDown={e=>startDrag(e,o)}
+                  return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
                     style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',background:o.color+opHex,
                       border:o.border?`${(o.borderWidth||1.5)*zoom}px solid ${o.borderColor||'#d97706'}`:'none',
-                      borderRadius:3,outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',...rotStyle}}>
+                      borderRadius:3,outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
                     {renderHandles(o,sel)}
                   </div>;
                 }
 
                 if(o.type==='shape'){const sw=(o.lineWidth||2)*zoom;
-                  return<div key={o.id} data-ann="1" onMouseDown={e=>startDrag(e,o)}
-                    style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',...rotStyle}}>
+                  return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
+                    style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
                     <svg width={W} height={H} style={{display:'block',overflow:'visible',pointerEvents:'none'}}>
                       {o.shape==='rectangle'&&<rect x={sw/2} y={sw/2} width={W-sw} height={H-sw} stroke={o.color} strokeWidth={sw} fill="none"/>}
                       {o.shape==='circle'&&<circle cx={W/2} cy={H/2} r={Math.min(W,H)/2-sw/2} stroke={o.color} strokeWidth={sw} fill="none"/>}
@@ -571,14 +580,14 @@ export default function EditPDF(){
                   </div>;
                 }
 
-                if(o.type==='sign-img'||o.type==='image')return<div key={o.id} data-ann="1" onMouseDown={e=>startDrag(e,o)}
-                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',...rotStyle}}>
+                if(o.type==='sign-img'||o.type==='image')return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
+                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
                   <img src={o.dataUrl} style={{width:'100%',height:'100%',objectFit:'contain',pointerEvents:'none'}} alt="" draggable={false}/>
                   {renderHandles(o,sel)}
                 </div>;
 
-                if(o.type==='sign-text')return<div key={o.id} data-ann="1" onMouseDown={e=>startDrag(e,o)}
-                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',display:'flex',alignItems:'center',...rotStyle}}>
+                if(o.type==='sign-text')return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
+                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',display:'flex',alignItems:'center',touchAction:'none',...rotStyle}}>
                   <span style={{fontFamily:o.font,fontSize:Math.min(W/4,H*.7),color:o.color||'#0a0a0a',pointerEvents:'none',whiteSpace:'nowrap'}}>{o.text}</span>
                   {renderHandles(o,sel)}
                 </div>;
@@ -587,42 +596,24 @@ export default function EditPDF(){
               })}
             </div>}
 
-            <canvas ref={liveCv} style={{position:'absolute',inset:0,zIndex:30,cursor:['draw','highlight','shape','eraser'].includes(tool)?'crosshair':'default',pointerEvents:['draw','highlight','shape','eraser'].includes(tool)?'auto':'none'}}
-              onMouseDown={drawDown} onMouseMove={drawMove} onMouseUp={drawUp} onMouseLeave={drawUp}
-              onTouchStart={drawDown} onTouchMove={drawMove} onTouchEnd={drawUp}/>
+            <canvas ref={liveCv} style={{position:'absolute',inset:0,zIndex:30,cursor:['draw','highlight','shape','eraser'].includes(tool)?'crosshair':'default',pointerEvents:['draw','highlight','shape','eraser'].includes(tool)?'auto':'none',touchAction:'none'}}
+              onPointerDown={drawDown} onPointerMove={drawMove} onPointerUp={drawUp} onPointerCancel={drawUp}/>
           </div>
         </div>
 
-        {/* RIGHT PANEL (desktop) */}
-        <div className="editor-right-panel" style={{width:200,borderLeft:'1px solid #e5e5e5',background:'#fbfbfd',padding:'12px 10px',flexShrink:0,overflowY:'auto',display:'flex',flexDirection:'column',gap:16}}>
+        {/* RIGHT PANEL — slide-up sheet on mobile */}
+        <div className={`editor-right-panel${showMobileProps?' open':''}`} style={{width:200,borderLeft:'1px solid #e5e5e5',background:'#fbfbfd',padding:'12px 10px',flexShrink:0,overflowY:'auto',display:'flex',flexDirection:'column',gap:16}}>
           {renderPanelContent()}
         </div>
       </div>
 
+      {/* MOBILE backdrop */}
+      {showMobileProps&&<div className="show-mobile" onClick={()=>setShowMobileProps(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.3)',zIndex:99,alignItems:'stretch'}}/>}
+
       {/* MOBILE FAB */}
-      <button className="editor-mobile-fab" onClick={()=>setShowMobileProps(true)}>
+      <button className="editor-mobile-fab" onClick={()=>setShowMobileProps(v=>!v)}>
         <Ic d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" size={20} sw={1.8}/>
       </button>
-
-      {/* MOBILE PROPERTIES BOTTOM SHEET */}
-      {showMobileProps&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.3)',zIndex:300,display:'flex',alignItems:'flex-end'}} onClick={()=>setShowMobileProps(false)}>
-          <div style={{width:'100%',background:'#fff',borderRadius:'20px 20px 0 0',maxHeight:'75vh',overflowY:'auto',paddingBottom:32}} onClick={e=>e.stopPropagation()}>
-            <div style={{padding:'12px 16px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
-              <div style={{width:40,height:4,borderRadius:4,background:'#d2d2d7',margin:'0 auto'}}/>
-            </div>
-            <div style={{padding:'8px 16px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-              <span style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>Properties</span>
-              <button onClick={()=>setShowMobileProps(false)} style={{background:'#f5f5f7',border:'none',borderRadius:20,width:28,height:28,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#86868b'}}>
-                <Ic d="M18 6L6 18M6 6l12 12" size={14}/>
-              </button>
-            </div>
-            <div style={{padding:'0 16px',display:'flex',flexDirection:'column',gap:16}}>
-              {renderPanelContent()}
-            </div>
-          </div>
-        </div>
-      )}
 
       <input id="img-input" type="file" accept="image/*" style={{display:'none'}} onChange={e=>addImage(e.target.files[0])}/>
       {showSign&&<SignModal onClose={()=>setShowSign(false)} onApply={applySign}/>}
