@@ -16,6 +16,16 @@ const FONTS=[
 const COLORS=['#ffffff','#0a0a0a','#2563eb','#dc2626','#16a34a','#d97706','#7c3aed','#db2777','#0891b2','#64748b','#f59e0b','#ea580c'];
 const HL_COLORS=['#fde047','#86efac','#fda4af','#93c5fd','#c4b5fd','#fdba74'];
 const SHAPES=[{id:'rectangle',l:'Rect'},{id:'circle',l:'Circle'},{id:'ellipse',l:'Ellipse'},{id:'triangle',l:'Tri'},{id:'line',l:'Line'},{id:'arrow',l:'Arrow'}];
+const TOOLS=[
+  {id:'select',l:'Select',ic:'M4 4l7 18 3-7 7-3z'},
+  {id:'text',l:'Text',ic:['M4 7V5h16v2','M12 5v14','M9 19h6']},
+  {id:'draw',l:'Draw',ic:'M3 17c2.5-3 4-5 6-5s2 4 4 4 4-9 6-9'},
+  {id:'highlight',l:'Highlight',ic:['M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2']},
+  {id:'sign',l:'Sign',ic:['M3 17c2.5-3 4-5 6-5s2 4 4 4 4-9 6-9','M3 21h18']},
+  {id:'shape',l:'Shape',ic:'M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
+  {id:'image',l:'Image',ic:['M21 19a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h3l2-3h4l2 3h3a2 2 0 012 2z']},
+  {id:'eraser',l:'Eraser',ic:['M20 20H7L3 16l9.5-9.5','M13 5l4 4']},
+];
 
 const Ic=({d,size=17,sw=1.5})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{[].concat(d).map((p,i)=><path key={i} d={p}/>)}</svg>;
 let _uid=0;const uid=()=>`a${++_uid}_${Date.now()}`;
@@ -30,7 +40,7 @@ function SignModal({onClose,onApply}){
   const [thick,setThick]=useState(3);
 
   function init(){const c=cv.current;if(!c)return;
-    c.width=960;c.height=320; // 2x resolution for crisp signatures
+    c.width=960;c.height=320;
     const x=c.getContext('2d');x.clearRect(0,0,960,320);
     x.strokeStyle=col;x.lineWidth=thick*2;x.lineCap='round';x.lineJoin='round';}
   useEffect(init,[]);
@@ -129,7 +139,7 @@ export default function EditPDF(){
   const [file,setFile]=useState(null);
   const [numPg,setNumPg]=useState(0);
   const [pg,setPg]=useState(1);
-  const [zoom,setZoom]=useState(1.4);
+  const [zoom,setZoom]=useState(()=>typeof window!=='undefined'&&window.innerWidth<768?0.8:1.4);
   const [loading,setLoading]=useState(false);
   const [saving,setSaving]=useState(false);
   const [dragIn,setDragIn]=useState(false);
@@ -149,6 +159,7 @@ export default function EditPDF(){
   const [shape,setShape]=useState('rectangle');
   const [selId,setSelId]=useState(null);
   const [showSign,setShowSign]=useState(false);
+  const [showMobileProps,setShowMobileProps]=useState(false);
 
   const [data,setData]=useState({});
   const hist=useRef([]);const rdo=useRef([]);
@@ -312,6 +323,75 @@ export default function EditPDF(){
     </>;
   }
 
+  /* ── Right panel content (shared between desktop panel and mobile sheet) ── */
+  function renderPanelContent(){
+    return(
+      <>
+        {tool==='highlight'&&<div>
+          <div className="panel-lbl">Highlight</div>
+          <div style={{display:'flex',gap:4,marginBottom:8,flexWrap:'wrap'}}>{HL_COLORS.map(c=><button key={c} onClick={()=>setHlColor(c)} style={{width:24,height:24,borderRadius:24,background:c,border:hlColor===c?'2px solid #0071e3':'1.5px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
+          <div className="panel-lbl">Opacity {Math.round(hlOpacity*100)}%</div>
+          <input type="range" min="0.1" max="1" step="0.05" value={hlOpacity} onChange={e=>setHlOp(parseFloat(e.target.value))} style={{width:'100%'}}/>
+          <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'#3c3c43',cursor:'pointer',marginTop:10}}>
+            <input type="checkbox" checked={hlBorder} onChange={e=>setHlBorder(e.target.checked)} style={{accentColor:'#0071e3'}}/> Add border
+          </label>
+          {hlBorder&&<div style={{marginTop:8}}>
+            <div style={{display:'flex',gap:4,marginBottom:6}}>{['#d97706','#dc2626','#0a0a0a','#2563eb','#16a34a'].map(c=><button key={c} onClick={()=>setHlBorderColor(c)} style={{width:18,height:18,borderRadius:18,background:c,border:hlBorderColor===c?'2px solid #0071e3':'1.5px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
+            <div className="panel-lbl">Border width {hlBorderW}px</div>
+            <input type="range" min="0.5" max="5" step="0.5" value={hlBorderW} onChange={e=>setHlBorderW(parseFloat(e.target.value))} style={{width:'100%'}}/>
+          </div>}
+        </div>}
+
+        {tool==='shape'&&<div>
+          <div className="panel-lbl">Shape</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>{SHAPES.map(s=><button key={s.id} onClick={()=>setShape(s.id)} style={{padding:'7px 0',borderRadius:8,border:`1px solid ${shape===s.id?'#0071e3':'#d2d2d7'}`,background:shape===s.id?'#e8f0fe':'#fff',color:shape===s.id?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:11,fontWeight:shape===s.id?500:400}}>{s.l}</button>)}</div>
+        </div>}
+
+        <div>
+          <div className="panel-lbl">Color</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>{COLORS.map(c=><button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:22,height:22,borderRadius:22,background:c,border:color===c?'2px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',boxShadow:c==='#ffffff'?'inset 0 0 0 1px #e5e5e5':'none',transform:color===c?'scale(1.15)':'scale(1)',transition:'all .15s'}}/>)}</div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}><input type="color" value={color} onChange={e=>{setColor(e.target.value);if(selId)upd(selId,{color:e.target.value});}} style={{width:22,height:22,border:'1px solid #d2d2d7',borderRadius:6,cursor:'pointer',padding:1}}/><span style={{fontSize:11,color:'#86868b',fontFamily:'monospace'}}>{color}</span></div>
+        </div>
+
+        {['draw','shape'].includes(tool)&&<div>
+          <div className="panel-lbl">Stroke {lineW}px</div>
+          <input type="range" min="0.5" max="16" step=".5" value={lineW} onChange={e=>setLineW(parseFloat(e.target.value))} style={{width:'100%'}}/>
+        </div>}
+
+        {(tool==='text'||selObj?.type==='text')&&<div>
+          <div className="panel-lbl">Size {selObj?.fontSize||fontSize}px</div>
+          <input type="range" min="8" max="96" value={selObj?.fontSize||fontSize} onChange={e=>{const v=parseInt(e.target.value);setFS(v);if(selId)upd(selId,{fontSize:v});}} style={{width:'100%',marginBottom:8}}/>
+          <div className="panel-lbl">Font</div>
+          <select value={selObj?.font||font} onChange={e=>{setFont(e.target.value);if(selId)upd(selId,{font:e.target.value});}} style={{width:'100%',padding:'7px 9px',border:'1px solid #d2d2d7',borderRadius:8,fontSize:12.5,fontFamily:'inherit',outline:'none',cursor:'pointer',marginBottom:6}}>{FONTS.map(f=><option key={f.l} value={f.v}>{f.l}</option>)}</select>
+          <div style={{display:'flex',gap:4}}>{[['B','bold',bold,setBold,{fontWeight:700}],['I','italic',italic,setItalic,{fontStyle:'italic'}]].map(([l,p,v,s,st])=><button key={l} onClick={()=>{s(!v);if(selId)upd(selId,{[p]:!v});}} style={{flex:1,padding:'6px',borderRadius:8,border:`1px solid ${v?'#0071e3':'#d2d2d7'}`,background:v?'#e8f0fe':'#fff',color:v?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:14,...st}}>{l}</button>)}</div>
+        </div>}
+
+        {selObj?.type==='highlight'&&<div>
+          <div className="panel-lbl">Opacity {Math.round((selObj.opacity??0.35)*100)}%</div>
+          <input type="range" min="0.05" max="1" step="0.05" value={selObj.opacity??0.35} onChange={e=>upd(selId,{opacity:parseFloat(e.target.value)})} style={{width:'100%'}}/>
+          <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'#3c3c43',cursor:'pointer',marginTop:8}}>
+            <input type="checkbox" checked={!!selObj.border} onChange={e=>upd(selId,{border:e.target.checked})} style={{accentColor:'#0071e3'}}/> Border
+          </label>
+          {selObj.border&&<div style={{marginTop:6}}>
+            <div style={{display:'flex',gap:3,marginBottom:4}}>{['#d97706','#dc2626','#0a0a0a','#2563eb'].map(c=><button key={c} onClick={()=>upd(selId,{borderColor:c})} style={{width:16,height:16,borderRadius:16,background:c,border:selObj.borderColor===c?'2px solid #0071e3':'1px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
+            <input type="range" min="0.5" max="5" step="0.5" value={selObj.borderWidth||1.5} onChange={e=>upd(selId,{borderWidth:parseFloat(e.target.value)})} style={{width:'100%'}}/>
+          </div>}
+        </div>}
+
+        {selObj&&selObj.rotate!==undefined&&<div>
+          <div className="panel-lbl">Rotate {selObj.rotate||0}°</div>
+          <input type="range" min="-180" max="180" step="1" value={selObj.rotate||0} onChange={e=>upd(selId,{rotate:parseInt(e.target.value)})} style={{width:'100%'}}/>
+          <button onClick={()=>upd(selId,{rotate:0})} style={{marginTop:4,fontSize:11,color:'#86868b',background:'#f5f5f7',border:'none',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Reset</button>
+        </div>}
+
+        {selObj&&<div style={{display:'flex',gap:4}}>
+          <button onClick={()=>dup(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #d2d2d7',background:'#fff',color:'#3c3c43',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Duplicate</button>
+          <button onClick={()=>del(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #fecaca',background:'#fff1f2',color:'#ff3b30',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Delete</button>
+        </div>}
+      </>
+    );
+  }
+
   /* ── Apple-style CSS ── */
   const css=`
     @import url('${GF}');
@@ -325,6 +405,27 @@ export default function EditPDF(){
     input[type=range]{-webkit-appearance:none;height:3px;background:#d2d2d7;border-radius:3px;outline:none}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:16px;background:#fff;border:1px solid #d2d2d7;box-shadow:0 1px 3px rgba(0,0,0,.15);cursor:pointer}
     select{-webkit-appearance:none;background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:28px}
+    .editor-mobile-toolbar{display:none;overflow-x:auto;white-space:nowrap;background:#fbfbfd;border-bottom:1px solid #e5e5e5;padding:0 8px;gap:4px;align-items:center;height:48px;flex-shrink:0;scrollbar-width:none;-ms-overflow-style:none}
+    .editor-mobile-toolbar::-webkit-scrollbar{display:none}
+    .mtb{background:none;border:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;border-radius:16px;transition:all .15s;font-family:inherit;height:36px;padding:0 10px;white-space:nowrap;color:#3c3c43;flex-shrink:0;font-size:12px}
+    .mtb:hover{background:#f5f5f7}.mtb.on{background:#e8f0fe;color:#0071e3}
+    .editor-mobile-fab{display:none;position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#0071e3;color:#fff;border:none;box-shadow:0 4px 20px rgba(0,113,227,.45);cursor:pointer;align-items:center;justify-content:center;z-index:200}
+    .show-mobile{display:none !important}
+    @media (max-width:768px){
+      .editor-tools-sidebar{display:none !important}
+      .editor-thumbs-sidebar{display:none !important}
+      .editor-right-panel{display:none !important}
+      .editor-mobile-toolbar{display:flex !important}
+      .editor-top-bar{flex-wrap:wrap;height:auto !important;min-height:44px;padding:6px 8px !important;gap:4px !important}
+      .editor-top-bar .hide-mobile{display:none !important}
+      .editor-canvas-area{padding:8px !important}
+      .editor-mobile-fab{display:flex !important}
+      .show-mobile{display:flex !important}
+    }
+    @media (min-width:769px){
+      .editor-mobile-toolbar{display:none !important}
+      .editor-mobile-fab{display:none !important}
+    }
   `;
 
   /* ═══ UPLOAD ═══ */
@@ -363,49 +464,56 @@ export default function EditPDF(){
       <style>{css}</style>
 
       {/* TOP BAR */}
-      <header style={{height:48,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 12px',gap:6,flexShrink:0,background:'#fbfbfd'}}>
+      <header className="editor-top-bar" style={{height:48,borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',padding:'0 12px',gap:6,flexShrink:0,background:'#fbfbfd'}}>
         <Link href="/" style={{textDecoration:'none',flexShrink:0,display:'inline-flex',alignItems:'center'}}><img src="/logo-wide.png" alt="breklo" style={{ height: 20, width: 'auto', display: 'block' }} /></Link>
-        <div style={{width:1,height:18,background:'#e5e5e5',margin:'0 4px'}}/>
-        <span style={{fontSize:12,fontWeight:500,color:'#3c3c43',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{file.name}</span>
+        <div className="hide-mobile" style={{width:1,height:18,background:'#e5e5e5',margin:'0 4px'}}/>
+        <span className="hide-mobile" style={{fontSize:12,fontWeight:500,color:'#3c3c43',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{file.name}</span>
         <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
           <button onClick={undo} disabled={!hist.current.length} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',cursor:hist.current.length?'pointer':'default',color:hist.current.length?'#3c3c43':'#d2d2d7'}}><Ic d="M3 7v6h6M3 13A9 9 0 1 0 6 6.7L3 13" size={14}/></button>
           <button onClick={redo} disabled={!rdo.current.length} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',cursor:rdo.current.length?'pointer':'default',color:rdo.current.length?'#3c3c43':'#d2d2d7'}}><Ic d="M21 7v6h-6M21 13A9 9 0 1 1 18 6.7L21 13" size={14}/></button>
-          <div style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
-          <button onClick={()=>setZoom(z=>Math.max(.4,+(z-.2).toFixed(1)))} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'#3c3c43',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
-          <span style={{fontSize:12,color:'#3c3c43',minWidth:36,textAlign:'center',fontWeight:500,fontVariantNumeric:'tabular-nums'}}>{Math.round(zoom*100)}%</span>
-          <button onClick={()=>setZoom(z=>Math.min(3,+(z+.2).toFixed(1)))} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'#3c3c43',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
-          <div style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
-          <button onClick={()=>setPg(p=>Math.max(1,p-1))} disabled={pg===1} style={{background:'none',border:'none',width:24,height:24,cursor:pg===1?'default':'pointer',color:pg===1?'#d2d2d7':'#3c3c43',fontSize:13}}>‹</button>
-          <span style={{fontSize:12,color:'#3c3c43',fontWeight:500,fontVariantNumeric:'tabular-nums'}}>{pg}/{numPg}</span>
-          <button onClick={()=>setPg(p=>Math.min(numPg,p+1))} disabled={pg===numPg} style={{background:'none',border:'none',width:24,height:24,cursor:pg===numPg?'default':'pointer',color:pg===numPg?'#d2d2d7':'#3c3c43',fontSize:13}}>›</button>
+          <div className="hide-mobile" style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
+          <button className="hide-mobile" onClick={()=>setZoom(z=>Math.max(.4,+(z-.2).toFixed(1)))} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'#3c3c43',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
+          <span className="hide-mobile" style={{fontSize:12,color:'#3c3c43',minWidth:36,textAlign:'center',fontWeight:500,fontVariantNumeric:'tabular-nums'}}>{Math.round(zoom*100)}%</span>
+          <button className="hide-mobile" onClick={()=>setZoom(z=>Math.min(3,+(z+.2).toFixed(1)))} style={{background:'none',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'#3c3c43',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+          <div className="hide-mobile" style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
+          <button className="hide-mobile" onClick={()=>setPg(p=>Math.max(1,p-1))} disabled={pg===1} style={{background:'none',border:'none',width:24,height:24,cursor:pg===1?'default':'pointer',color:pg===1?'#d2d2d7':'#3c3c43',fontSize:13}}>‹</button>
+          <span className="hide-mobile" style={{fontSize:12,color:'#3c3c43',fontWeight:500,fontVariantNumeric:'tabular-nums'}}>{pg}/{numPg}</span>
+          <button className="hide-mobile" onClick={()=>setPg(p=>Math.min(numPg,p+1))} disabled={pg===numPg} style={{background:'none',border:'none',width:24,height:24,cursor:pg===numPg?'default':'pointer',color:pg===numPg?'#d2d2d7':'#3c3c43',fontSize:13}}>›</button>
         </div>
-        <div style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
+        <div className="hide-mobile" style={{width:1,height:18,background:'#e5e5e5',margin:'0 2px'}}/>
         <button onClick={savePdf} disabled={saving} style={{background:'#0071e3',color:'#fff',border:'none',borderRadius:20,padding:'0 16px',height:30,display:'flex',alignItems:'center',gap:5,cursor:saving?'wait':'pointer',fontSize:13,fontWeight:500,fontFamily:'inherit',flexShrink:0}}>
           <Ic d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" size={12} sw={2}/>{saving?'Saving…':'Download'}
         </button>
+        <button className="show-mobile" onClick={()=>setShowMobileProps(true)} style={{background:'none',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',color:'#3c3c43',alignItems:'center',justifyContent:'center',flexShrink:0,padding:0}}>
+          <Ic d="M3 12h18M3 6h18M3 18h18" size={18}/>
+        </button>
       </header>
 
+      {/* MOBILE TOOLBAR */}
+      <div className="editor-mobile-toolbar">
+        {TOOLS.map(t=>(
+          <button key={t.id} className={`mtb${tool===t.id?' on':''}`} onClick={()=>setTool(t.id)}>
+            <Ic d={t.ic} size={15}/><span>{t.l}</span>
+          </button>
+        ))}
+        <div style={{width:1,height:28,background:'#e5e5e5',margin:'0 4px',flexShrink:0}}/>
+        {COLORS.slice(0,6).map(c=>(
+          <button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:24,height:24,borderRadius:'50%',background:c,border:color===c?'2.5px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',flexShrink:0,boxShadow:c==='#ffffff'?'inset 0 0 0 1px #e5e5e5':'none',transform:color===c?'scale(1.2)':'scale(1)',transition:'all .15s'}}/>
+        ))}
+      </div>
+
       <div style={{flex:1,display:'flex',overflow:'hidden'}}>
-        {/* TOOLS */}
-        <div style={{width:110,borderRight:'1px solid #e5e5e5',display:'flex',flexDirection:'column',padding:'8px 6px',gap:1,flexShrink:0,overflowY:'auto',background:'#fbfbfd'}}>
-          {[
-            {id:'select',l:'Select',ic:'M4 4l7 18 3-7 7-3z'},
-            {id:'text',l:'Text',ic:['M4 7V5h16v2','M12 5v14','M9 19h6']},
-            {id:'draw',l:'Draw',ic:'M3 17c2.5-3 4-5 6-5s2 4 4 4 4-9 6-9'},
-            {id:'highlight',l:'Highlight',ic:['M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2']},
-            {id:'sign',l:'Signature',ic:['M3 17c2.5-3 4-5 6-5s2 4 4 4 4-9 6-9','M3 21h18']},
-            {id:'shape',l:'Shape',ic:'M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
-            {id:'image',l:'Image',ic:['M21 19a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h3l2-3h4l2 3h3a2 2 0 012 2z']},
-            {id:'eraser',l:'Eraser',ic:['M20 20H7L3 16l9.5-9.5','M13 5l4 4']},
-          ].map(t=>(
+        {/* TOOLS SIDEBAR */}
+        <div className="editor-tools-sidebar" style={{width:110,borderRight:'1px solid #e5e5e5',display:'flex',flexDirection:'column',padding:'8px 6px',gap:1,flexShrink:0,overflowY:'auto',background:'#fbfbfd'}}>
+          {TOOLS.map(t=>(
             <button key={t.id} className={`tb${tool===t.id?' on':''}`} onClick={()=>setTool(t.id)}>
               <Ic d={t.ic} size={16}/><span className="tl">{t.l}</span>
             </button>
           ))}
         </div>
 
-        {/* THUMBS */}
-        <div style={{width:72,borderRight:'1px solid #e5e5e5',overflowY:'auto',padding:'8px 4px',display:'flex',flexDirection:'column',gap:4,flexShrink:0,background:'#f5f5f7'}}>
+        {/* THUMBS SIDEBAR */}
+        <div className="editor-thumbs-sidebar" style={{width:72,borderRight:'1px solid #e5e5e5',overflowY:'auto',padding:'8px 4px',display:'flex',flexDirection:'column',gap:4,flexShrink:0,background:'#f5f5f7'}}>
           {Array.from({length:numPg},(_,i)=>i+1).map(n=>(
             <button key={n} onClick={()=>setPg(n)} style={{background:pg===n?'#e8f0fe':'#fff',border:`1.5px solid ${pg===n?'#0071e3':'#d2d2d7'}`,borderRadius:6,padding:2,cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:2,transition:'all .15s'}}>
               <canvas ref={el=>{thumbs.current[n]=el;}} style={{borderRadius:3,display:'block',maxWidth:'100%'}}/>
@@ -414,8 +522,8 @@ export default function EditPDF(){
           ))}
         </div>
 
-        {/* MAIN */}
-        <div style={{flex:1,overflow:'auto',background:'#e5e5ea',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:20}} onClick={handleClick}>
+        {/* MAIN CANVAS */}
+        <div className="editor-canvas-area" style={{flex:1,overflow:'auto',background:'#e5e5ea',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:20}} onClick={handleClick}>
           {loading&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(245,245,247,.8)',zIndex:100,backdropFilter:'blur(6px)'}}><div style={{background:'#fff',borderRadius:14,padding:'16px 24px',fontSize:14,fontWeight:500,color:'#1d1d1f',boxShadow:'0 4px 16px rgba(0,0,0,.08)'}}>Loading…</div></div>}
 
           <div style={{position:'relative',boxShadow:'0 2px 20px rgba(0,0,0,.15)',borderRadius:2,flexShrink:0,userSelect:'none'}}>
@@ -485,72 +593,36 @@ export default function EditPDF(){
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
-        <div style={{width:200,borderLeft:'1px solid #e5e5e5',background:'#fbfbfd',padding:'12px 10px',flexShrink:0,overflowY:'auto',display:'flex',flexDirection:'column',gap:16}}>
-
-          {tool==='highlight'&&<div>
-            <div className="panel-lbl">Highlight</div>
-            <div style={{display:'flex',gap:4,marginBottom:8,flexWrap:'wrap'}}>{HL_COLORS.map(c=><button key={c} onClick={()=>setHlColor(c)} style={{width:24,height:24,borderRadius:24,background:c,border:hlColor===c?'2px solid #0071e3':'1.5px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
-            <div className="panel-lbl">Opacity {Math.round(hlOpacity*100)}%</div>
-            <input type="range" min="0.1" max="1" step="0.05" value={hlOpacity} onChange={e=>setHlOp(parseFloat(e.target.value))} style={{width:'100%'}}/>
-            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'#3c3c43',cursor:'pointer',marginTop:10}}>
-              <input type="checkbox" checked={hlBorder} onChange={e=>setHlBorder(e.target.checked)} style={{accentColor:'#0071e3'}}/> Add border
-            </label>
-            {hlBorder&&<div style={{marginTop:8}}>
-              <div style={{display:'flex',gap:4,marginBottom:6}}>{['#d97706','#dc2626','#0a0a0a','#2563eb','#16a34a'].map(c=><button key={c} onClick={()=>setHlBorderColor(c)} style={{width:18,height:18,borderRadius:18,background:c,border:hlBorderColor===c?'2px solid #0071e3':'1.5px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
-              <div className="panel-lbl">Border width {hlBorderW}px</div>
-              <input type="range" min="0.5" max="5" step="0.5" value={hlBorderW} onChange={e=>setHlBorderW(parseFloat(e.target.value))} style={{width:'100%'}}/>
-            </div>}
-          </div>}
-
-          {tool==='shape'&&<div>
-            <div className="panel-lbl">Shape</div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>{SHAPES.map(s=><button key={s.id} onClick={()=>setShape(s.id)} style={{padding:'7px 0',borderRadius:8,border:`1px solid ${shape===s.id?'#0071e3':'#d2d2d7'}`,background:shape===s.id?'#e8f0fe':'#fff',color:shape===s.id?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:11,fontWeight:shape===s.id?500:400}}>{s.l}</button>)}</div>
-          </div>}
-
-          <div>
-            <div className="panel-lbl">Color</div>
-            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>{COLORS.map(c=><button key={c} onClick={()=>{setColor(c);if(selId)upd(selId,{color:c});}} style={{width:22,height:22,borderRadius:22,background:c,border:color===c?'2px solid #0071e3':c==='#ffffff'?'1.5px solid #d2d2d7':'1.5px solid transparent',cursor:'pointer',boxShadow:c==='#ffffff'?'inset 0 0 0 1px #e5e5e5':'none',transform:color===c?'scale(1.15)':'scale(1)',transition:'all .15s'}}/>)}</div>
-            <div style={{display:'flex',alignItems:'center',gap:6}}><input type="color" value={color} onChange={e=>{setColor(e.target.value);if(selId)upd(selId,{color:e.target.value});}} style={{width:22,height:22,border:'1px solid #d2d2d7',borderRadius:6,cursor:'pointer',padding:1}}/><span style={{fontSize:11,color:'#86868b',fontFamily:'monospace'}}>{color}</span></div>
-          </div>
-
-          {['draw','shape'].includes(tool)&&<div>
-            <div className="panel-lbl">Stroke {lineW}px</div>
-            <input type="range" min="0.5" max="16" step=".5" value={lineW} onChange={e=>setLineW(parseFloat(e.target.value))} style={{width:'100%'}}/>
-          </div>}
-
-          {(tool==='text'||selObj?.type==='text')&&<div>
-            <div className="panel-lbl">Size {selObj?.fontSize||fontSize}px</div>
-            <input type="range" min="8" max="96" value={selObj?.fontSize||fontSize} onChange={e=>{const v=parseInt(e.target.value);setFS(v);if(selId)upd(selId,{fontSize:v});}} style={{width:'100%',marginBottom:8}}/>
-            <div className="panel-lbl">Font</div>
-            <select value={selObj?.font||font} onChange={e=>{setFont(e.target.value);if(selId)upd(selId,{font:e.target.value});}} style={{width:'100%',padding:'7px 9px',border:'1px solid #d2d2d7',borderRadius:8,fontSize:12.5,fontFamily:'inherit',outline:'none',cursor:'pointer',marginBottom:6}}>{FONTS.map(f=><option key={f.l} value={f.v}>{f.l}</option>)}</select>
-            <div style={{display:'flex',gap:4}}>{[['B','bold',bold,setBold,{fontWeight:700}],['I','italic',italic,setItalic,{fontStyle:'italic'}]].map(([l,p,v,s,st])=><button key={l} onClick={()=>{s(!v);if(selId)upd(selId,{[p]:!v});}} style={{flex:1,padding:'6px',borderRadius:8,border:`1px solid ${v?'#0071e3':'#d2d2d7'}`,background:v?'#e8f0fe':'#fff',color:v?'#0071e3':'#3c3c43',cursor:'pointer',fontSize:14,...st}}>{l}</button>)}</div>
-          </div>}
-
-          {selObj?.type==='highlight'&&<div>
-            <div className="panel-lbl">Opacity {Math.round((selObj.opacity??0.35)*100)}%</div>
-            <input type="range" min="0.05" max="1" step="0.05" value={selObj.opacity??0.35} onChange={e=>upd(selId,{opacity:parseFloat(e.target.value)})} style={{width:'100%'}}/>
-            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'#3c3c43',cursor:'pointer',marginTop:8}}>
-              <input type="checkbox" checked={!!selObj.border} onChange={e=>upd(selId,{border:e.target.checked})} style={{accentColor:'#0071e3'}}/> Border
-            </label>
-            {selObj.border&&<div style={{marginTop:6}}>
-              <div style={{display:'flex',gap:3,marginBottom:4}}>{['#d97706','#dc2626','#0a0a0a','#2563eb'].map(c=><button key={c} onClick={()=>upd(selId,{borderColor:c})} style={{width:16,height:16,borderRadius:16,background:c,border:selObj.borderColor===c?'2px solid #0071e3':'1px solid #d2d2d7',cursor:'pointer'}}/>)}</div>
-              <input type="range" min="0.5" max="5" step="0.5" value={selObj.borderWidth||1.5} onChange={e=>upd(selId,{borderWidth:parseFloat(e.target.value)})} style={{width:'100%'}}/>
-            </div>}
-          </div>}
-
-          {selObj&&selObj.rotate!==undefined&&<div>
-            <div className="panel-lbl">Rotate {selObj.rotate||0}°</div>
-            <input type="range" min="-180" max="180" step="1" value={selObj.rotate||0} onChange={e=>upd(selId,{rotate:parseInt(e.target.value)})} style={{width:'100%'}}/>
-            <button onClick={()=>upd(selId,{rotate:0})} style={{marginTop:4,fontSize:11,color:'#86868b',background:'#f5f5f7',border:'none',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Reset</button>
-          </div>}
-
-          {selObj&&<div style={{display:'flex',gap:4}}>
-            <button onClick={()=>dup(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #d2d2d7',background:'#fff',color:'#3c3c43',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Duplicate</button>
-            <button onClick={()=>del(selId)} style={{flex:1,padding:'6px',borderRadius:8,border:'1px solid #fecaca',background:'#fff1f2',color:'#ff3b30',fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Delete</button>
-          </div>}
+        {/* RIGHT PANEL (desktop) */}
+        <div className="editor-right-panel" style={{width:200,borderLeft:'1px solid #e5e5e5',background:'#fbfbfd',padding:'12px 10px',flexShrink:0,overflowY:'auto',display:'flex',flexDirection:'column',gap:16}}>
+          {renderPanelContent()}
         </div>
       </div>
+
+      {/* MOBILE FAB */}
+      <button className="editor-mobile-fab" onClick={()=>setShowMobileProps(true)}>
+        <Ic d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" size={20} sw={1.8}/>
+      </button>
+
+      {/* MOBILE PROPERTIES BOTTOM SHEET */}
+      {showMobileProps&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.3)',zIndex:300,display:'flex',alignItems:'flex-end'}} onClick={()=>setShowMobileProps(false)}>
+          <div style={{width:'100%',background:'#fff',borderRadius:'20px 20px 0 0',maxHeight:'75vh',overflowY:'auto',paddingBottom:32}} onClick={e=>e.stopPropagation()}>
+            <div style={{padding:'12px 16px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{width:40,height:4,borderRadius:4,background:'#d2d2d7',margin:'0 auto'}}/>
+            </div>
+            <div style={{padding:'8px 16px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+              <span style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>Properties</span>
+              <button onClick={()=>setShowMobileProps(false)} style={{background:'#f5f5f7',border:'none',borderRadius:20,width:28,height:28,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#86868b'}}>
+                <Ic d="M18 6L6 18M6 6l12 12" size={14}/>
+              </button>
+            </div>
+            <div style={{padding:'0 16px',display:'flex',flexDirection:'column',gap:16}}>
+              {renderPanelContent()}
+            </div>
+          </div>
+        </div>
+      )}
 
       <input id="img-input" type="file" accept="image/*" style={{display:'none'}} onChange={e=>addImage(e.target.files[0])}/>
       {showSign&&<SignModal onClose={()=>setShowSign(false)} onApply={applySign}/>}
