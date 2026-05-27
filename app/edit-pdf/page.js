@@ -295,44 +295,52 @@ export default function EditPDF(){
     const pid=e.pointerId;const el=e.currentTarget;
     try{el.setPointerCapture(pid);}catch(err){}
     const sx=e.clientX-o.x*zoom,sy=e.clientY-o.y*zoom;
-    function mv(ev){ev.preventDefault();upd(o.id,{x:(ev.clientX-sx)/zoom,y:(ev.clientY-sy)/zoom});}
-    function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+    let rafId=null;
+    function mv(ev){ev.preventDefault();if(rafId)return;rafId=requestAnimationFrame(()=>{rafId=null;upd(o.id,{x:(ev.clientX-sx)/zoom,y:(ev.clientY-sy)/zoom});});}
+    function up(ev){if(rafId)cancelAnimationFrame(rafId);try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
     window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
   }
 
   /* ── Handles (resize + rotate + delete) ── */
   function renderHandles(o,sel){
     if(!sel)return null;
+    const isMob=typeof window!=='undefined'&&window.innerWidth<768;
+    const handleSize=isMob?24:10;
+    const half=handleSize/2;
     function resize(corner,e){
       e.stopPropagation();e.preventDefault();
       const pid=e.pointerId;const el=e.target;try{el.setPointerCapture(pid);}catch(err){}
       const sx=e.clientX,sy=e.clientY;const ow=o.w||200,oh=o.h||60,ox=o.x,oy=o.y;
-      function mv(ev){ev.preventDefault();const dx=(ev.clientX-sx)/zoom,dy=(ev.clientY-sy)/zoom;let u={};
+      let rafId=null;
+      function mv(ev){ev.preventDefault();if(rafId)return;rafId=requestAnimationFrame(()=>{rafId=null;const dx=(ev.clientX-sx)/zoom,dy=(ev.clientY-sy)/zoom;let u={};
         if(corner.includes('e'))u.w=Math.max(20,ow+dx);if(corner.includes('s'))u.h=Math.max(20,oh+dy);
-        if(corner.includes('w')){u.x=ox+dx;u.w=Math.max(20,ow-dx);}if(corner.includes('n')){u.y=oy+dy;u.h=Math.max(20,oh-dy);}upd(o.id,u);}
-      function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+        if(corner.includes('w')){u.x=ox+dx;u.w=Math.max(20,ow-dx);}if(corner.includes('n')){u.y=oy+dy;u.h=Math.max(20,oh-dy);}
+        if(o.type==='text'){const newW=u.w||ow;u.fontSize=Math.max(8,Math.round((o.fontSize||18)*(newW/ow)));}
+        upd(o.id,u);});}
+      function up(ev){if(rafId)cancelAnimationFrame(rafId);try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
     function rotate(e){
       e.stopPropagation();e.preventDefault();
       const pid=e.pointerId;const el=e.target;try{el.setPointerCapture(pid);}catch(err){}
       const rect=pdfCv.current.getBoundingClientRect();
       const cx=(o.x+(o.w||200)/2)*zoom,cy=(o.y+(o.h||60)/2)*zoom;
-      function mv(ev){ev.preventDefault();const mx=ev.clientX-rect.left-cx,my=ev.clientY-rect.top-cy;upd(o.id,{rotate:Math.round(Math.atan2(my,mx)*180/Math.PI+90)});}
-      function up(ev){try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+      let rafId=null;
+      function mv(ev){ev.preventDefault();if(rafId)return;rafId=requestAnimationFrame(()=>{rafId=null;const mx=ev.clientX-rect.left-cx,my=ev.clientY-rect.top-cy;upd(o.id,{rotate:Math.round(Math.atan2(my,mx)*180/Math.PI+90)});});}
+      function up(ev){if(rafId)cancelAnimationFrame(rafId);try{el.releasePointerCapture(pid);}catch(err){}window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);}
 
-    const hs={position:'absolute',width:8,height:8,background:'#fff',border:'1.5px solid #0071e3',borderRadius:8,zIndex:10,touchAction:'none'};
+    const hs={position:'absolute',width:handleSize,height:handleSize,background:'#fff',border:'1.5px solid #0071e3',borderRadius:handleSize,zIndex:10,touchAction:'none'};
     return<>
-      {[['nw',{left:-4,top:-4},'nwse-resize'],['ne',{right:-4,top:-4},'nesw-resize'],['sw',{left:-4,bottom:-4},'nesw-resize'],['se',{right:-4,bottom:-4},'nwse-resize']].map(([c,s,cur])=>
+      {[['nw',{left:-half,top:-half},'nwse-resize'],['ne',{right:-half,top:-half},'nesw-resize'],['sw',{left:-half,bottom:-half},'nesw-resize'],['se',{right:-half,bottom:-half},'nwse-resize']].map(([c,s,cur])=>
         <div key={c} data-handle="1" onPointerDown={e=>resize(c,e)} style={{...hs,...s,cursor:cur}}/>)}
       <div style={{position:'absolute',top:-30,left:'50%',marginLeft:-7,display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div data-handle="1" onPointerDown={rotate} style={{width:14,height:14,borderRadius:14,background:'#fff',border:'1.5px solid #0071e3',cursor:'grab',boxShadow:'0 1px 4px rgba(0,0,0,.15)',display:'flex',alignItems:'center',justifyContent:'center',touchAction:'none'}}>
-          <Ic d="M23 4v6h-6M23 10A10 10 0 0 0 4 6" size={7} sw={2.5}/>
+        <div data-handle="1" onPointerDown={rotate} style={{width:isMob?28:14,height:isMob?28:14,borderRadius:28,background:'#fff',border:'1.5px solid #0071e3',cursor:'grab',boxShadow:'0 1px 4px rgba(0,0,0,.15)',display:'flex',alignItems:'center',justifyContent:'center',touchAction:'none'}}>
+          <Ic d="M23 4v6h-6M23 10A10 10 0 0 0 4 6" size={isMob?12:7} sw={2.5}/>
         </div>
         <div style={{width:1,height:10,background:'#0071e3'}}/>
       </div>
-      <button data-handle="1" onPointerDown={e=>{e.preventDefault();e.stopPropagation();del(o.id);}} style={{position:'absolute',top:-8,right:-8,width:16,height:16,borderRadius:16,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0,touchAction:'none'}}>
-        <Ic d="M18 6L6 18M6 6l12 12" size={7} sw={3}/>
+      <button data-handle="1" onPointerDown={e=>{e.preventDefault();e.stopPropagation();del(o.id);}} style={{position:'absolute',top:isMob?-14:-8,right:isMob?-14:-8,width:isMob?28:16,height:isMob?28:16,borderRadius:28,background:'#ff3b30',border:'1.5px solid #fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:'0 1px 4px rgba(0,0,0,.2)',padding:0,touchAction:'none'}}>
+        <Ic d="M18 6L6 18M6 6l12 12" size={isMob?12:7} sw={3}/>
       </button>
     </>;
   }
@@ -540,11 +548,22 @@ export default function EditPDF(){
           <div style={{position:'relative',boxShadow:'0 2px 20px rgba(0,0,0,.15)',borderRadius:2,flexShrink:0,userSelect:'none'}}>
             <canvas ref={pdfCv} style={{display:'block',zIndex:1,touchAction:'none'}}/>
 
-            {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?20:5,pointerEvents:tool==='select'?'auto':'none'}} overflow="visible">
+            {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?20:5,pointerEvents:tool==='select'?'auto':'none',touchAction:'none'}} overflow="visible">
               {(pd.paths||[]).map(p=><g key={p.id}>
-                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent" strokeWidth={Math.max(40,(p.lineWidth||2)*zoom+20)} style={{pointerEvents:tool==='select'?'stroke':'none',cursor:'pointer',touchAction:'none'}} onPointerDown={e=>{e.preventDefault();e.stopPropagation();setSelId(p.id);}}/>
+                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent"
+                  strokeWidth={typeof window!=='undefined'&&window.innerWidth<768?44:24}
+                  style={{pointerEvents:tool==='select'?'stroke':'none',cursor:'pointer',touchAction:'none'}}
+                  onPointerDown={e=>{e.preventDefault();e.stopPropagation();setSelId(p.id);}}/>
                 <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke={p.color} strokeWidth={(p.lineWidth||2)*zoom} strokeLinecap="round" strokeLinejoin="round" opacity={p.opacity||1} style={{pointerEvents:'none'}}/>
-                {selId===p.id&&(()=>{const xs=p.points.map(pt=>pt.x*zoom),ys=p.points.map(pt=>pt.y*zoom);return<rect x={Math.min(...xs)-4} y={Math.min(...ys)-4} width={Math.max(...xs)-Math.min(...xs)+8} height={Math.max(...ys)-Math.min(...ys)+8} fill="none" stroke="#0071e3" strokeWidth="1.5" strokeDasharray="4 3"/>;})()}
+                {selId===p.id&&(()=>{const xs=p.points.map(pt=>pt.x*zoom),ys=p.points.map(pt=>pt.y*zoom);const minX=Math.min(...xs),minY=Math.min(...ys),maxX=Math.max(...xs),maxY=Math.max(...ys);return<>
+                  <rect x={minX-4} y={minY-4} width={maxX-minX+8} height={maxY-minY+8} fill="none" stroke="#0071e3" strokeWidth="1.5" strokeDasharray="4 3"/>
+                  <foreignObject x={minX+(maxX-minX)/2-14} y={minY-36} width="28" height="28">
+                    <div style={{width:28,height:28,borderRadius:14,background:'#ff3b30',border:'2px solid #fff',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,.3)',touchAction:'none'}}
+                      onPointerDown={e=>{e.preventDefault();e.stopPropagation();del(p.id);}}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </div>
+                  </foreignObject>
+                </>;})()}
               </g>)}
             </svg>}
 
