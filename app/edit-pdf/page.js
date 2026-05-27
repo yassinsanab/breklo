@@ -177,16 +177,15 @@ export default function EditPDF(){
     window.addEventListener('keydown',k);return()=>window.removeEventListener('keydown',k);
   },[selId,data]);
 
-  function gp(p){return data[p]||{objs:[],paths:[]};}
+  function gp(p){return data[p]||{objs:[]};}
   function snap(){return JSON.parse(JSON.stringify(data));}
-  function setpd(p,fn){hist.current.push(snap());rdo.current=[];setData(prev=>{const c=prev[p]||{objs:[],paths:[]};return{...prev,[p]:fn(c)};});}
+  function setpd(p,fn){hist.current.push(snap());rdo.current=[];setData(prev=>{const c=prev[p]||{objs:[]};return{...prev,[p]:fn(c)};});}
   function undo(){if(!hist.current.length)return;rdo.current.push(snap());setData(hist.current.pop());setSelId(null);}
   function redo(){if(!rdo.current.length)return;hist.current.push(snap());setData(rdo.current.pop());setSelId(null);}
   function addObj(o){setpd(pg,d=>({...d,objs:[...d.objs,{id:uid(),...o}]}));}
-  function addPath(p){setpd(pg,d=>({...d,paths:[...d.paths,{id:uid(),...p}]}));}
-  function upd(id,ch){hist.current.push(snap());rdo.current=[];setData(prev=>{const d=prev[pg]||{objs:[],paths:[]};return{...prev,[pg]:{objs:d.objs.map(o=>o.id===id?{...o,...ch}:o),paths:d.paths.map(p=>p.id===id?{...p,...ch}:p)}};});}
-  function del(id){setpd(pg,d=>({objs:d.objs.filter(o=>o.id!==id),paths:d.paths.filter(p=>p.id!==id)}));setSelId(null);}
-  function dup(id){const d=gp(pg);const o=[...d.objs,...d.paths].find(x=>x.id===id);if(!o)return;const c={...o,id:uid(),x:(o.x||0)+15,y:(o.y||0)+15};if(c.points)c.points=c.points.map(p=>({x:p.x+15,y:p.y+15}));if(d.objs.find(x=>x.id===id))addObj(c);else addPath(c);setSelId(c.id);}
+  function upd(id,ch){hist.current.push(snap());rdo.current=[];setData(prev=>{const d=prev[pg]||{objs:[]};return{...prev,[pg]:{objs:d.objs.map(o=>o.id===id?{...o,...ch}:o)}};});}
+  function del(id){setpd(pg,d=>({objs:d.objs.filter(o=>o.id!==id)}));setSelId(null);}
+  function dup(id){const d=gp(pg);const o=d.objs.find(x=>x.id===id);if(!o)return;const c={...o,id:uid(),x:(o.x||0)+15,y:(o.y||0)+15};addObj(c);setSelId(c.id);}
 
   async function loadPdf(f){
     if(!f||f.type!=='application/pdf')return;setLoading(true);setFile(f);setData({});setSelId(null);hist.current=[];rdo.current=[];setPg(1);
@@ -247,13 +246,18 @@ export default function EditPDF(){
 
   function drawUp(e){if(!isDrawing.current)return;isDrawing.current=false;try{e.target.releasePointerCapture(e.pointerId);}catch{}const sp=getSP(e);
     const c=liveCv.current;if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
-    if(tool==='draw'&&livePts.current.length>=2){addPath({points:livePts.current.map(p=>({x:p.x/zoom,y:p.y/zoom})),color,lineWidth:lineW,opacity:1});}
+    if(tool==='draw'&&livePts.current.length>=2){
+      const pts=livePts.current.map(p=>({x:p.x/zoom,y:p.y/zoom}));
+      const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+      const minX=Math.min(...xs),minY=Math.min(...ys),maxX=Math.max(...xs),maxY=Math.max(...ys);
+      const w=maxX-minX||10,h=maxY-minY||10;
+      addObj({type:'draw',x:minX,y:minY,w,h,points:pts.map(p=>({x:(p.x-minX)/w,y:(p.y-minY)/h})),color,lineWidth:lineW,opacity:1,rotate:0});}
     else if(tool==='highlight'){const s=shapeOrig.current;const w=(sp.x-s.x)/zoom,h=(sp.y-s.y)/zoom;if(Math.abs(w)<3||Math.abs(h)<3)return;
       addObj({type:'highlight',x:Math.min(s.x,sp.x)/zoom,y:Math.min(s.y,sp.y)/zoom,w:Math.abs(w),h:Math.abs(h),color:hlColor,opacity:hlOpacity,border:hlBorder,borderColor:hlBorderColor,borderWidth:hlBorderW,rotate:0});}
     else if(tool==='shape'){const s=shapeOrig.current;const w=(sp.x-s.x)/zoom,h=(sp.y-s.y)/zoom;if(Math.abs(w)<3||Math.abs(h)<3)return;
       addObj({type:'shape',shape,x:Math.min(s.x,sp.x)/zoom,y:Math.min(s.y,sp.y)/zoom,w:Math.abs(w),h:Math.abs(h),color,lineWidth:lineW,rotate:0});}
-    else if(tool==='eraser'){const pts=livePts.current.map(p=>({x:p.x/zoom,y:p.y/zoom}));
-      setpd(pg,d=>({...d,paths:d.paths.filter(p=>!p.points?.some(pp=>pts.some(ep=>Math.hypot(ep.x-pp.x,ep.y-pp.y)<20)))}));}
+    else if(tool==='eraser'){const pts=livePts.current.map(p=>({x:p.x/zoom,y:p.y/zoom}));const pad=20;
+      setpd(pg,d=>({...d,objs:d.objs.filter(o=>o.type!=='draw'||!pts.some(ep=>ep.x>=(o.x-pad)&&ep.x<=(o.x+o.w+pad)&&ep.y>=(o.y-pad)&&ep.y<=(o.y+o.h+pad)))}));}
     livePts.current=[];}
 
   function applySign(sig){const pos=window.__signPos||{x:60,y:60};
@@ -267,10 +271,10 @@ export default function EditPDF(){
       const hf=await pdfd.embedFont(StandardFonts.Helvetica);const hfb=await pdfd.embedFont(StandardFonts.HelveticaBold);
       function h2r(h){if(!h||h.length<7)return rgb(0,0,0);return rgb(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);}
       for(const[pnS,pd]of Object.entries(data)){const pn=parseInt(pnS);const page=pdfd.getPage(pn-1);const{width:pgW,height:pgH}=page.getSize();const sx=pgW/baseW,sy=pgH/baseH;
-        for(const path of(pd.paths||[])){if(!path.points?.length)continue;const c=h2r(path.color);
-          for(let i=0;i<path.points.length-1;i++)page.drawLine({start:{x:path.points[i].x*sx,y:pgH-path.points[i].y*sy},end:{x:path.points[i+1].x*sx,y:pgH-path.points[i+1].y*sy},thickness:(path.lineWidth||2)*Math.min(sx,sy),color:c});}
         for(const o of(pd.objs||[])){
-          if(o.type==='text'){const sz=(o.fontSize||18)*Math.min(sx,sy);(o.text||'').split('\n').forEach((line,i)=>{try{page.drawText(line,{x:o.x*sx,y:pgH-(o.y+i*(o.fontSize||18)*1.35+(o.fontSize||18))*sy,size:sz,font:o.bold?hfb:hf,color:h2r(o.color)});}catch{}});}
+          if(o.type==='draw'&&o.points?.length>1){const c=h2r(o.color);
+            for(let i=0;i<o.points.length-1;i++){const p1x=(o.x+o.points[i].x*o.w)*sx,p1y=pgH-(o.y+o.points[i].y*o.h)*sy;const p2x=(o.x+o.points[i+1].x*o.w)*sx,p2y=pgH-(o.y+o.points[i+1].y*o.h)*sy;page.drawLine({start:{x:p1x,y:p1y},end:{x:p2x,y:p2y},thickness:(o.lineWidth||2)*Math.min(sx,sy),color:c});}}
+          else if(o.type==='text'){const sz=(o.fontSize||18)*Math.min(sx,sy);(o.text||'').split('\n').forEach((line,i)=>{try{page.drawText(line,{x:o.x*sx,y:pgH-(o.y+i*(o.fontSize||18)*1.35+(o.fontSize||18))*sy,size:sz,font:o.bold?hfb:hf,color:h2r(o.color)});}catch{}});}
           else if(o.type==='highlight'){page.drawRectangle({x:o.x*sx,y:pgH-(o.y+o.h)*sy,width:o.w*sx,height:o.h*sy,color:h2r(o.color),opacity:o.opacity??0.35});
             if(o.border)page.drawRectangle({x:o.x*sx,y:pgH-(o.y+o.h)*sy,width:o.w*sx,height:o.h*sy,borderColor:h2r(o.borderColor||'#d97706'),borderWidth:(o.borderWidth||1.5)*Math.min(sx,sy)});}
           else if(o.type==='shape'){const c=h2r(o.color),lw=(o.lineWidth||2)*Math.min(sx,sy);const x=o.x*sx,y=pgH-(o.y+o.h)*sy,w=o.w*sx,h=o.h*sy;
@@ -285,7 +289,7 @@ export default function EditPDF(){
       const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file.name.replace(/\.pdf$/i,'')+'-by-breklo.pdf';a.click();URL.revokeObjectURL(url);
     }catch(e){console.error(e);alert('Save failed.');}setSaving(false);}
 
-  const pd=gp(pg);const selObj=[...pd.objs,...pd.paths].find(o=>o.id===selId);
+  const pd=gp(pg);const selObj=pd.objs.find(o=>o.id===selId);
 
   /* ── Drag (pointer capture) ── */
   function startDrag(e,o){
@@ -548,29 +552,18 @@ export default function EditPDF(){
           <div style={{position:'relative',boxShadow:'0 2px 20px rgba(0,0,0,.15)',borderRadius:2,flexShrink:0,userSelect:'none'}}>
             <canvas ref={pdfCv} style={{display:'block',zIndex:1,touchAction:'none'}}/>
 
-            {baseW>0&&<svg style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?20:5,pointerEvents:tool==='select'?'auto':'none',touchAction:'none'}} overflow="visible">
-              {(pd.paths||[]).map(p=><g key={p.id}>
-                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke="transparent"
-                  strokeWidth={typeof window!=='undefined'&&window.innerWidth<768?44:24}
-                  style={{pointerEvents:tool==='select'?'stroke':'none',cursor:'pointer',touchAction:'none'}}
-                  onPointerDown={e=>{e.preventDefault();e.stopPropagation();setSelId(p.id);}}/>
-                <polyline points={p.points.map(pt=>`${pt.x*zoom},${pt.y*zoom}`).join(' ')} fill="none" stroke={p.color} strokeWidth={(p.lineWidth||2)*zoom} strokeLinecap="round" strokeLinejoin="round" opacity={p.opacity||1} style={{pointerEvents:'none'}}/>
-                {selId===p.id&&(()=>{const xs=p.points.map(pt=>pt.x*zoom),ys=p.points.map(pt=>pt.y*zoom);const minX=Math.min(...xs),minY=Math.min(...ys),maxX=Math.max(...xs),maxY=Math.max(...ys);return<>
-                  <rect x={minX-4} y={minY-4} width={maxX-minX+8} height={maxY-minY+8} fill="none" stroke="#0071e3" strokeWidth="1.5" strokeDasharray="4 3"/>
-                  <foreignObject x={minX+(maxX-minX)/2-14} y={minY-36} width="28" height="28">
-                    <div style={{width:28,height:28,borderRadius:14,background:'#ff3b30',border:'2px solid #fff',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,.3)',touchAction:'none'}}
-                      onPointerDown={e=>{e.preventDefault();e.stopPropagation();del(p.id);}}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    </div>
-                  </foreignObject>
-                </>;})()}
-              </g>)}
-            </svg>}
-
             {baseW>0&&<div style={{position:'absolute',inset:0,width:baseW*zoom,height:baseH*zoom,zIndex:tool==='select'?30:10,pointerEvents:tool==='select'?'auto':'none'}}>
               {(pd.objs||[]).map(o=>{
                 const sel=selId===o.id;const W=(o.w||200)*zoom;const H=(o.h||60)*zoom;
                 const rotStyle=o.rotate?{transform:`rotate(${o.rotate}deg)`,transformOrigin:'center center'}:{};
+
+                if(o.type==='draw'){return<div key={o.id} data-ann="1" onPointerDown={e=>{e.preventDefault();startDrag(e,o);}}
+                  style={{position:'absolute',left:o.x*zoom,top:o.y*zoom,width:W,height:H,cursor:'move',outline:sel?'2px solid #0071e3':'none',outlineOffset:2,zIndex:sel?40:25,pointerEvents:'auto',touchAction:'none',...rotStyle}}>
+                  <svg width={W} height={H} style={{display:'block',overflow:'visible',pointerEvents:'none'}}>
+                    <polyline points={(o.points||[]).map(p=>`${p.x*W},${p.y*H}`).join(' ')} fill="none" stroke={o.color} strokeWidth={(o.lineWidth||2)*zoom} strokeLinecap="round" strokeLinejoin="round" opacity={o.opacity||1}/>
+                  </svg>
+                  {renderHandles(o,sel)}
+                </div>;}
 
                 if(o.type==='text')return<TextAnn key={o.id} o={o} sel={sel} zoom={zoom} rotStyle={rotStyle} onDrag={startDrag} onHandles={renderHandles} upd={upd} del={del}/>;
 
