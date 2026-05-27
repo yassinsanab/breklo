@@ -107,3 +107,18 @@ input[type="number"] {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .tools-flow { column-count: 1 !important; }
+  .feat-row { grid-template-columns: 1fr !important; }
+  .feat-row.flip .feat-text { order: unset !important; }
+  .feat-art { height: 220px !important; }
+  .steps { grid-template-columns: 1fr !important; }
+  .tools-cats { grid-template-columns: repeat(2, 1fr) !important; }
+  .stats-row { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+  .tools-cats { grid-template-columns: 1fr !important; }
+  .stats-row { grid-template-columns: 1fr !important; }
+}

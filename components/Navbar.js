@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 export default function Navbar() {
   return (
+    <>
+    <style>{`@media (max-width: 768px) { .nav-links { display: none !important; } }`}</style>
     <header style={{
       position: 'sticky', top: 0, zIndex: 50,
       background: 'rgba(255,255,255,.9)',
@@ -21,7 +23,7 @@ export default function Navbar() {
         </Link>
 
         {/* NAV LINKS — centered */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }}>
+        <nav className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }}>
           {[
             ['Edit & Sign', '/#tools'],
             ['Convert', '/#tools'],
@@ -63,5 +65,6 @@ export default function Navbar() {
         </Link>
       </div>
     </header>
+    </>
   );
 }

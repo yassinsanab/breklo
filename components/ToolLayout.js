@@ -22,25 +22,29 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
       </div>
 
       {/* MAIN */}
-      <main style={{ flex: 1, maxWidth: 1060, margin: '0 auto', width: '100%', padding: '56px 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: 64, alignItems: 'start' }}>
-        <div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1.2px', color: '#111', marginBottom: 10 }}>{title}</h1>
-          <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.7, marginBottom: 24 }}>{subtitle}</p>
-          {bullets && bullets.map(b => (
-            <div key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0071e3" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              </div>
-              <span style={{ fontSize: 14, color: '#374151', lineHeight: 1.55 }}>{b}</span>
-            </div>
-          ))}
+      <main style={{ flex: 1, maxWidth: 1060, margin: '0 auto', width: '100%', padding: '40px 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
+          <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-1.2px', color: '#111', marginBottom: 4 }}>{title}</h1>
+          <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.7 }}>{subtitle}</p>
         </div>
-        <div>{children}</div>
+        <div style={{ maxWidth: 600, margin: '0 auto' }}>{children}</div>
+        {bullets && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12, marginTop: 32 }}>
+            {bullets.map(b => (
+              <div key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0071e3" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span style={{ fontSize: 14, color: '#374151', lineHeight: 1.55 }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
 
       {/* RELATED TOOLS */}
       {relatedTools.length > 0 && (
-        <section style={{ borderTop: '1px solid #f4f4f5', padding: '36px 2.5rem' }}>
+        <section style={{ borderTop: '1px solid #f4f4f5', padding: '24px 20px' }}>
           <div style={{ maxWidth: 1060, margin: '0 auto' }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 14 }}>Related tools</h2>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -63,7 +67,7 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
 
       {/* RELATED BLOG POSTS */}
       {relatedPosts.length > 0 && (
-        <section style={{ borderTop: '1px solid #f4f4f5', padding: '36px 2.5rem', background: '#fafafa' }}>
+        <section style={{ borderTop: '1px solid #f4f4f5', padding: '24px 20px', background: '#fafafa' }}>
           <div style={{ maxWidth: 1060, margin: '0 auto' }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 14 }}>Related guides</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
