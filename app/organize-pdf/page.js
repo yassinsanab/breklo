@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -124,6 +125,7 @@ export default function OrganizePDF() {
       }}>
         {loading ? 'Saving...' : done ? 'Downloaded! Organize again?' : 'Save Organized PDF'}
       </button>
+      <ToolContent slug="organize-pdf" />
     </ToolLayout>
   );
 }

@@ -1,2 +1,7 @@
-export const metadata = { title: 'Split PDF – Split a PDF into Separate Pages Free', description: 'Split a PDF into individual pages or extract a page range. Free online tool, no signup required.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('split-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('m4a-to-mp3');
 export const metadata = {
-  title: 'M4A to MP3 – Convert M4A to MP3 Online Free',
-  description: 'Convert M4A and AAC audio files to MP3 format online for free. Choose output bitrate. No signup required.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

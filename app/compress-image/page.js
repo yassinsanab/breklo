@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadBlob, formatSize } from '@/lib/imageUtils';
 
 const related = [
@@ -217,6 +218,7 @@ export default function CompressImage() {
       }}>
         {loading ? 'Compressing...' : results.length > 0 ? 'Compress again' : `Compress ${files.length} image${files.length !== 1 ? 's' : ''}`}
       </button>
+      <ToolContent slug="compress-image" />
     </ToolLayout>
   );
 }

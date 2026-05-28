@@ -1,2 +1,7 @@
-export const metadata = { title: 'PNG to PDF – Convert PNG to PDF Online Free', description: 'Convert PNG images to PDF online for free. Combine multiple PNGs into one PDF document.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('png-to-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

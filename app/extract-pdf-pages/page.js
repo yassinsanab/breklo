@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -125,6 +126,7 @@ export default function ExtractPages() {
       }}>
         {loading ? 'Extracting...' : done ? 'Done! Extract again?' : 'Extract Pages'}
       </button>
+      <ToolContent slug="extract-pdf-pages" />
     </ToolLayout>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -158,6 +159,7 @@ export default function SplitPDF() {
       >
         {loading ? 'Splitting...' : done ? 'Done! Split again?' : 'Split PDF'}
       </button>
+      <ToolContent slug="split-pdf" />
     </ToolLayout>
   );
 }

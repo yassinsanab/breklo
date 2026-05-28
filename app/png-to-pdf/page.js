@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -115,6 +116,7 @@ export default function PngToPdf() {
       }}>
         {loading ? 'Converting...' : done ? 'Done! Convert again?' : `Convert ${files.length > 0 ? files.length : ''} PNG${files.length !== 1 ? 's' : ''} to PDF`}
       </button>
+      <ToolContent slug="png-to-pdf" />
     </ToolLayout>
   );
 }

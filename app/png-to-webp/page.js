@@ -1,8 +1,10 @@
 'use client';
 import { ImageConverter } from '@/components/ImageConverter';
+import ToolContent from '@/components/ToolContent';
 
 export default function PngToWebp() {
   return (
+  <>
     <ImageConverter
       slug="png-to-webp"
       title="PNG to WebP"
@@ -23,5 +25,7 @@ export default function PngToWebp() {
         { name: 'Compress Image', slug: 'compress-image' },
       ]}
     />
+    <ToolContent slug="png-to-webp" />
+  </>
   );
 }

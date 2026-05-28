@@ -1,2 +1,7 @@
-export const metadata = { title: 'Merge PDF – Combine PDF Files Online Free', description: 'Merge multiple PDF files into one document online. Fast, free and secure — no signup required.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('merge-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

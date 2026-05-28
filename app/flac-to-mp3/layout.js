@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('flac-to-mp3');
 export const metadata = {
-  title: 'FLAC to MP3 Converter – Free Online Tool | Breklo',
-  description: 'Convert lossless FLAC audio files to MP3 format online for free. Choose bitrate up to 320kbps. No uploads required.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

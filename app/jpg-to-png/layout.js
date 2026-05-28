@@ -1,2 +1,7 @@
-export const metadata = { title: 'JPG to PNG – Convert JPG to PNG Online Free', description: 'Convert JPG images to lossless PNG format online for free. No signup, no watermark.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('jpg-to-png');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

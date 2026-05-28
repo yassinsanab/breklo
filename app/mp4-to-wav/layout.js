@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('mp4-to-wav');
 export const metadata = {
-  title: 'MP4 to WAV – Extract Audio from Video as WAV Free',
-  description: 'Extract the audio from an MP4 or video file and save it as an uncompressed WAV file. Runs in your browser. No signup required.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

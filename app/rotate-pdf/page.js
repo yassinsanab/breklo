@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -113,6 +114,7 @@ export default function RotatePDF() {
       }}>
         {loading ? 'Rotating...' : done ? 'Done! Rotate again?' : `Rotate ${angle}°`}
       </button>
+      <ToolContent slug="rotate-pdf" />
     </ToolLayout>
   );
 }

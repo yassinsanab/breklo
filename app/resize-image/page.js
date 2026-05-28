@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadBlob, formatSize } from '@/lib/imageUtils';
 
 const related = [
@@ -276,6 +277,7 @@ export default function ResizeImage() {
       }}>
         {loading ? 'Resizing...' : done ? 'Done! Resize again?' : 'Resize Image'}
       </button>
+      <ToolContent slug="resize-image" />
     </ToolLayout>
   );
 }

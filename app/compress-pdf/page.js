@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 
 const related = [
   { name: 'Merge PDF', slug: 'merge-pdf' },
@@ -323,6 +324,7 @@ export default function CompressPDF() {
       }}>
         {loading ? 'Compressing...' : result ? 'Compress again' : 'Compress PDF'}
       </button>
+      <ToolContent slug="compress-pdf" />
     </ToolLayout>
   );
 }

@@ -1,2 +1,7 @@
-export const metadata = { title: 'JPG to PDF – Convert JPG to PDF Online Free', description: 'Convert one or multiple JPG images to a PDF document online. Free, fast and secure.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('jpg-to-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

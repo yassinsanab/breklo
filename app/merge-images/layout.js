@@ -1,2 +1,7 @@
-export const metadata = { title: 'Merge Images – Combine Images into One Online Free', description: 'Merge multiple images into one by stacking them vertically or side by side. Free online tool.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('merge-images');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { loadImage, downloadBlob, formatSize } from '@/lib/imageUtils';
 
 const related = [
@@ -200,6 +201,7 @@ export default function MergeImages() {
         {loading ? 'Merging...' : done ? 'Done! Merge again?' : `Merge ${files.length} image${files.length !== 1 ? 's' : ''}`}
       </button>
       {files.length < 2 && <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', marginTop: 8 }}>Add at least 2 images to merge</p>}
+      <ToolContent slug="merge-images" />
     </ToolLayout>
   );
 }

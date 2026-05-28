@@ -1,2 +1,7 @@
-export const metadata = { title: 'PDF to PNG – Convert PDF to PNG Images Free', description: 'Convert PDF pages to lossless PNG images online for free. No signup, no watermark.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('pdf-to-png');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

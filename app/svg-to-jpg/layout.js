@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('svg-to-jpg');
 export const metadata = {
-  title: 'SVG to JPG – Convert SVG to JPG Online Free',
-  description: 'Convert SVG vector graphics to JPG images online for free. Choose output scale and background colour. No signup required.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

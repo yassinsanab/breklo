@@ -1,2 +1,7 @@
-export const metadata = { title: 'Delete PDF Pages – Remove Pages from PDF Free', description: 'Delete unwanted pages from a PDF file online. Free, fast and secure — no signup required.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('delete-pdf-pages');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

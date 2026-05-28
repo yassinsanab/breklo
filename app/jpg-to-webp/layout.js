@@ -1,2 +1,7 @@
-export const metadata = { title: 'JPG to WebP – Convert JPG to WebP Online Free', description: 'Convert JPG images to modern WebP format for up to 30% smaller file sizes. Free online tool.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('jpg-to-webp');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

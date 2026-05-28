@@ -1,2 +1,7 @@
-export const metadata = { title: 'Extract PDF Pages – Extract Pages from PDF Free', description: 'Extract specific pages from a PDF and save them as a new document. Free online tool.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('extract-pdf-pages');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

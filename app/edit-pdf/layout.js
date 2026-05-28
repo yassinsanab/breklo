@@ -1,8 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('edit-pdf');
 export const metadata = {
-  title: 'Edit PDF Online Free – Add Text, Draw, Sign & Annotate',
-  description: 'Edit PDF files online for free. Add text, draw, highlight, sign and annotate PDFs directly in your browser. No software needed, no signup.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
-
-export default function Layout({ children }) {
-  return children;
-}
+export default function Layout({ children }) { return children; }

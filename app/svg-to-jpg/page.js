@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadBlob, formatSize } from '@/lib/imageUtils';
 
 const related = [
@@ -194,6 +195,7 @@ export default function SvgToJpg() {
       }}>
         {loading ? 'Converting...' : done ? 'Convert again' : `Convert ${files.length > 0 ? files.length : ''} SVG${files.length !== 1 ? 's' : ''} to JPG`}
       </button>
+      <ToolContent slug="svg-to-jpg" />
     </ToolLayout>
   );
 }

@@ -1,8 +1,10 @@
 'use client';
 import { ImageConverter } from '@/components/ImageConverter';
+import ToolContent from '@/components/ToolContent';
 
 export default function JpgToWebp() {
   return (
+  <>
     <ImageConverter
       slug="jpg-to-webp"
       title="JPG to WebP"
@@ -23,5 +25,7 @@ export default function JpgToWebp() {
         { name: 'Compress Image', slug: 'compress-image' },
       ]}
     />
+    <ToolContent slug="jpg-to-webp" />
+  </>
   );
 }

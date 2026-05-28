@@ -1,2 +1,7 @@
-export const metadata = { title: 'Rotate PDF – Rotate PDF Pages Online Free', description: 'Rotate all pages in a PDF by 90, 180 or 270 degrees. Free online PDF rotator, no signup needed.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('rotate-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

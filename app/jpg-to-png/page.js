@@ -1,8 +1,10 @@
 'use client';
 import { ImageConverter } from '@/components/ImageConverter';
+import ToolContent from '@/components/ToolContent';
 
 export default function JpgToPng() {
   return (
+  <>
     <ImageConverter
       slug="jpg-to-png"
       title="JPG to PNG"
@@ -23,5 +25,7 @@ export default function JpgToPng() {
         { name: 'Compress Image', slug: 'compress-image' },
       ]}
     />
+    <ToolContent slug="jpg-to-png" />
+  </>
   );
 }

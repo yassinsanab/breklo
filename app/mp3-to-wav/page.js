@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { decodeAudioFile, encodeToWav, downloadBlob, formatSize, formatDuration } from '@/lib/audioUtils';
 
 const related = [
@@ -134,6 +135,7 @@ export default function Mp3ToWav() {
       }}>
         {loading ? 'Converting...' : done ? 'Convert again' : 'Convert to WAV'}
       </button>
+      <ToolContent slug="mp3-to-wav" />
     </ToolLayout>
   );
 }

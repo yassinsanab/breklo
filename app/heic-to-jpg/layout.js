@@ -1,2 +1,7 @@
-export const metadata = { title: 'HEIC to JPG – Convert iPhone Photos to JPG Free', description: 'Convert HEIC and HEIF photos from iPhone to JPG online. Free HEIC to JPG converter.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('heic-to-jpg');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

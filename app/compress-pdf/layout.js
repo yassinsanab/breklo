@@ -1,2 +1,7 @@
-export const metadata = { title: 'Compress PDF – Reduce PDF File Size Online Free', description: 'Compress PDF files online for free. Reduce PDF size by up to 80% without losing quality.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('compress-pdf');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

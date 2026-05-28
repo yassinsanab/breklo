@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -140,6 +141,7 @@ export default function PasswordProtect() {
         {loading ? 'Protecting...' : done ? 'Protected! Do another?' : 'Protect PDF'}
       </button>
       {done && <p style={{ fontSize: 12, color: '#15803d', textAlign: 'center', marginTop: 8 }}>Your PDF has been password-protected and downloaded.</p>}
+      <ToolContent slug="password-protect-pdf" />
     </ToolLayout>
   );
 }

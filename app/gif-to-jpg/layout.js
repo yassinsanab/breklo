@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('gif-to-jpg');
 export const metadata = {
-  title: 'GIF to JPG – Convert GIF to JPG Online Free',
-  description: 'Convert GIF images to JPG format online for free. Extracts the first frame as a high-quality JPG. No signup required.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

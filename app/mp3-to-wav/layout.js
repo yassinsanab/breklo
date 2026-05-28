@@ -1,2 +1,7 @@
-export const metadata = { title: 'MP3 to WAV – Convert MP3 to WAV Online Free', description: 'Convert MP3 audio to uncompressed WAV format online for free. Perfect for audio editing.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('mp3-to-wav');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

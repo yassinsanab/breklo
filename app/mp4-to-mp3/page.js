@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { decodeAudioFile, encodeToMp3, downloadBlob, formatSize, formatDuration } from '@/lib/audioUtils';
 
 const related = [
@@ -131,6 +132,7 @@ export default function Mp4ToMp3() {
       }}>
         {loading ? 'Converting...' : done ? 'Convert again' : 'Convert to MP3'}
       </button>
+      <ToolContent slug="mp4-to-mp3" />
     </ToolLayout>
   );
 }

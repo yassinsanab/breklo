@@ -1,4 +1,5 @@
 'use client';
+import ToolContent from '@/components/ToolContent';
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -477,6 +478,7 @@ export default function EditPDF(){
         </div>
       </div>
       <input id="fi" type="file" accept=".pdf" style={{display:'none'}} onChange={e=>loadPdf(e.target.files[0])}/>
+      <ToolContent slug="edit-pdf"/>
     </div>
   );
 

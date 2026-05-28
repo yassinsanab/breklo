@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('webp-to-jpg');
 export const metadata = {
-  title: 'WebP to JPG Converter – Free Online Tool | Breklo',
-  description: 'Convert WebP images to JPG format online for free. Fast, private, runs entirely in your browser — no uploads.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

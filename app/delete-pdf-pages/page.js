@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadFile, formatSize } from '@/lib/pdfUtils';
 
 const related = [
@@ -126,6 +127,7 @@ export default function DeletePages() {
       }}>
         {loading ? 'Deleting...' : done ? 'Done! Delete again?' : 'Delete Pages'}
       </button>
+      <ToolContent slug="delete-pdf-pages" />
     </ToolLayout>
   );
 }

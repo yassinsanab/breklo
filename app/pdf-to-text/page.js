@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { formatSize } from '@/lib/pdfUtils';
 import { downloadBlob } from '@/lib/download';
 
@@ -137,6 +138,7 @@ export default function PdfToText() {
           />
         </div>
       )}
+      <ToolContent slug="pdf-to-text" />
     </ToolLayout>
   );
 }

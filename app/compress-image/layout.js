@@ -1,2 +1,7 @@
-export const metadata = { title: 'Compress Image – Reduce Image File Size Free', description: 'Compress JPG, PNG and WebP images online for free. Reduce image size without losing quality.' };
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('compress-image');
+export const metadata = {
+  title: content.h1,
+  description: content.intro.slice(0, 160),
+};
 export default function Layout({ children }) { return children; }

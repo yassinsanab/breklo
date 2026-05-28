@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('ogg-to-mp3');
 export const metadata = {
-  title: 'OGG to MP3 Converter – Free Online Tool | Breklo',
-  description: 'Convert OGG Vorbis audio files to MP3 format online for free. Works entirely in your browser — no uploads needed.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }

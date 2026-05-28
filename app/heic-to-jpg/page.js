@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ToolLayout from '@/components/ToolLayout';
+import ToolContent from '@/components/ToolContent';
 import { downloadBlob, formatSize } from '@/lib/imageUtils';
 
 const related = [
@@ -129,6 +130,7 @@ export default function HeicToJpg() {
       }}>
         {loading ? 'Converting...' : done ? 'Convert again' : `Convert ${files.length} file${files.length !== 1 ? 's' : ''} to JPG`}
       </button>
+      <ToolContent slug="heic-to-jpg" />
     </ToolLayout>
   );
 }

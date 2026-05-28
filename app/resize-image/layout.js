@@ -1,5 +1,7 @@
+import { getToolContent } from '@/lib/toolContent';
+const content = getToolContent('resize-image');
 export const metadata = {
-  title: 'Resize Image Online – Free Image Resizer | Breklo',
-  description: 'Resize images by exact pixel dimensions or percentage online for free. Supports JPG, PNG, WebP and GIF. Runs in your browser.',
+  title: content.h1,
+  description: content.intro.slice(0, 160),
 };
 export default function Layout({ children }) { return children; }
