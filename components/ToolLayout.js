@@ -4,60 +4,125 @@ import Footer from './Footer';
 import ToolFAQ from './ToolFAQ';
 import Link from 'next/link';
 
-export default function ToolLayout({ title, subtitle, bullets, children, relatedTools = [], slug = '' }) {
+/**
+ * Upgraded ToolLayout — polished shell that applies to ALL tool pages.
+ *
+ * Props (mostly unchanged from your previous ToolLayout — backwards compatible):
+ *   title          — tool name (h1)
+ *   subtitle       — short tool description
+ *   bullets        — array of bullet strings (rendered in the bullets strip)
+ *   children       — actual tool UI (drop zone, file list, controls, primary button)
+ *   relatedTools   — [{ name, slug }]
+ *   slug           — used to look up FAQs + posts
+ *
+ *   NEW props (all optional):
+ *   tagLabel       — small uppercase pill in the hero (default "Live · Free · No account")
+ *   metaTrust      — 3 short trust items for the hero strip [{icon, label}, ...]
+ *   howSteps       — array of 3 {title, body} for the "How to ..." section
+ *                    (defaults provided)
+ *   illust         — JSX for the hero illustration on the right (optional)
+ */
+export default function ToolLayout({
+  title,
+  subtitle,
+  bullets,
+  children,
+  relatedTools = [],
+  slug = '',
+  tagLabel = 'Live · Free · No account',
+  metaTrust = DEFAULT_TRUST,
+  howSteps = DEFAULT_HOW,
+  illust = null,
+}) {
   const { toolFaqs } = require('@/lib/toolFaqs');
   const { toolToPosts } = require('@/lib/toolToPosts');
   const faqs = slug && toolFaqs[slug] ? toolFaqs[slug] : [];
   const relatedPosts = slug && toolToPosts[slug] ? toolToPosts[slug] : [];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#fff' }}>
       <Navbar />
 
       {/* BREADCRUMB */}
-      <div style={{ padding: '12px 2.5rem', fontSize: 13, color: '#9ca3af', borderBottom: '1px solid #f4f4f5' }}>
-        <Link href="/" style={{ color: '#9ca3af' }}>Home</Link>
-        <span style={{ margin: '0 6px' }}>›</span>
-        <span style={{ color: '#111' }}>{title}</span>
+      <div className="bk-crumb">
+        <div className="bk-crumb-inner bk-container">
+          <Link href="/">Home</Link>
+          <span className="sep">›</span>
+          <Link href="/#tools">All tools</Link>
+          <span className="sep">›</span>
+          <span className="here">{title}</span>
+        </div>
       </div>
 
-      {/* MAIN */}
-      <main style={{ flex: 1, maxWidth: 1060, margin: '0 auto', width: '100%', padding: '40px 20px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-1.2px', color: '#111', marginBottom: 4 }}>{title}</h1>
-          <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.7 }}>{subtitle}</p>
-        </div>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>{children}</div>
-        {bullets && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12, marginTop: 32 }}>
-            {bullets.map(b => (
-              <div key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0071e3" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      {/* HERO */}
+      <section className="bk-tp-hero">
+        <div className="bk-tp-hero-glow" />
+        <div className="bk-container bk-tp-hero-inner" data-has-illust={!!illust}>
+          <div>
+            <span className="bk-tp-tag">
+              <span className="pill">Live</span>
+              <span><span className="dot" /> {tagLabel}</span>
+            </span>
+            <h1 className="bk-tp-h1">{title}</h1>
+            <p className="bk-tp-sub">{subtitle}</p>
+            <div className="bk-tp-meta">
+              {metaTrust.map((t, i) => (
+                <div key={i} className="bk-tp-meta-item">
+                  <span className="ic">{t.icon}</span>
+                  <span>{t.label}</span>
                 </div>
-                <span style={{ fontSize: 14, color: '#374151', lineHeight: 1.55 }}>{b}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
-      </main>
+          {illust && <div className="bk-tp-illust">{illust}</div>}
+        </div>
+      </section>
+
+      {/* WORKBENCH — wraps the actual tool UI */}
+      <section className="bk-workbench">
+        <div className="bk-container">
+          <div className="bk-workbench-wrap">
+            {children}
+          </div>
+        </div>
+      </section>
+
+      {/* BULLETS */}
+      {bullets && bullets.length > 0 && (
+        <section className="bk-tp-bullets">
+          <div className="bk-container">
+            <div className="bk-bullets-grid">
+              {bullets.map(b => (
+                <div key={b} className="bk-bullet">
+                  <span className="check">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span>{b}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* RELATED TOOLS */}
       {relatedTools.length > 0 && (
-        <section style={{ borderTop: '1px solid #f4f4f5', padding: '24px 20px' }}>
-          <div style={{ maxWidth: 1060, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 14 }}>Related tools</h2>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {relatedTools.map(t => (
-                <Link key={t.slug} href={`/${t.slug}`} style={{
-                  border: '1px solid #e5e7eb', borderRadius: 9, padding: '9px 16px',
-                  fontSize: 13, fontWeight: 500, color: '#374151', background: '#fff',
-                  textDecoration: 'none', transition: 'border-color .15s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = '#0071e3'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
-                >
-                  {t.name}
+        <section className="bk-tp-related">
+          <div className="bk-container">
+            <h2>Tools that pair well</h2>
+            <div className="bk-related-grid">
+              {relatedTools.map((t, i) => (
+                <Link key={t.slug} href={`/${t.slug}`} className={`bk-related-card ${COLORS[i % COLORS.length]}`}>
+                  <span className="ic">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+                  </span>
+                  <div>
+                    <h5>{t.name}</h5>
+                    <p>{t.desc || 'Open tool →'}</p>
+                  </div>
+                  <span className="arr">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                  </span>
                 </Link>
               ))}
             </div>
@@ -65,25 +130,39 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
         </section>
       )}
 
-      {/* RELATED BLOG POSTS */}
+      {/* HOW IT WORKS */}
+      <section className="bk-tp-how">
+        <div className="bk-container">
+          <div className="heading">
+            <h2>How to use {title}</h2>
+            <p>Three steps. No installation, no account, no watermark.</p>
+          </div>
+          <div className="bk-how-grid">
+            {howSteps.map((s, i) => (
+              <div key={i} className="bk-how-card">
+                <div className="num">{i + 1}</div>
+                <h4>{s.title}</h4>
+                <p>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* RELATED GUIDES (kept from your original layout) */}
       {relatedPosts.length > 0 && (
-        <section style={{ borderTop: '1px solid #f4f4f5', padding: '24px 20px', background: '#fafafa' }}>
-          <div style={{ maxWidth: 1060, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 14 }}>Related guides</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <section className="bk-tp-guides">
+          <div className="bk-container">
+            <h2>Related guides</h2>
+            <div className="bk-guides">
               {relatedPosts.map(p => (
-                <Link key={p.slug} href={`/blog/${p.slug}`} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  fontSize: 14, color: '#374151', textDecoration: 'none',
-                  padding: '10px 14px', background: '#fff', borderRadius: 9,
-                  border: '1px solid #f0f0f0', transition: 'border-color .15s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#bfdbfe'; e.currentTarget.querySelector('span').style.color = '#0071e3'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#f0f0f0'; e.currentTarget.querySelector('span').style.color = '#374151'; }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-                  <span style={{ transition: 'color .15s' }}>{p.title}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af', flexShrink: 0 }}>Read →</span>
+                <Link key={p.slug} href={`/blog/${p.slug}`} className="bk-guide">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                  </svg>
+                  <span>{p.title}</span>
+                  <span className="arr">Read →</span>
                 </Link>
               ))}
             </div>
@@ -91,10 +170,32 @@ export default function ToolLayout({ title, subtitle, bullets, children, related
         </section>
       )}
 
-      {/* FAQ */}
+      {/* FAQ (uses your existing ToolFAQ component for schema.org markup) */}
       {faqs.length > 0 && <ToolFAQ faqs={faqs} toolName={title} />}
 
       <Footer />
     </div>
   );
 }
+
+/* ─── defaults ──────────────────────────────────────────────────────── */
+
+const ICON = {
+  shield: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12Z"/><path d="m9 12 2 2 4-4"/></svg>,
+  zap: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>,
+  globe: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>,
+};
+
+const DEFAULT_TRUST = [
+  { icon: ICON.shield, label: 'Files never leave your browser' },
+  { icon: ICON.zap, label: 'Instant results, no waiting' },
+  { icon: ICON.globe, label: 'Works on any device' },
+];
+
+const DEFAULT_HOW = [
+  { title: 'Upload your file', body: 'Drag and drop, or click to browse. We support files up to 100 MB.' },
+  { title: 'Pick your options', body: 'Choose the settings that fit your task. Defaults work well for most cases.' },
+  { title: 'Download the result', body: 'Your file is ready in seconds. Download directly — no email, no account.' },
+];
+
+const COLORS = ['blue', 'purple', 'teal', 'orange', 'pink'];
