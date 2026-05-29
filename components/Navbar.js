@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   return (
@@ -43,6 +44,8 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
+
+        <LanguageSwitcher />
 
         {/* ALL TOOLS BUTTON */}
         <Link href="/#tools-index" style={{
