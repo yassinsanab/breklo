@@ -1,16 +1,25 @@
-// Renders SEO-optimized content below the tool UI
-// Import this in every tool layout: <ToolContent slug="compress-pdf" />
+'use client';
+// Renders SEO content below the tool UI.
+// Locale-aware: on /de/* routes it shows German content, otherwise English.
 
+import { usePathname } from 'next/navigation';
 import { getToolContent } from '@/lib/toolContent';
+import { toolContentDe } from '@/lib/toolContentDe';
 
 export default function ToolContent({ slug }) {
-  const content = getToolContent(slug);
+  const pathname = usePathname();
+  const isGerman = pathname?.startsWith('/de');
+
+  const content = isGerman
+    ? (toolContentDe[slug] || getToolContent(slug))
+    : getToolContent(slug);
+
   if (!content) return null;
 
   return (
     <section style={{
       maxWidth: 760, margin: '64px auto 0', padding: '0 20px',
-      fontFamily: "'Inter','Helvetica Neue',Arial,sans-serif",
+      fontFamily: "-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif",
     }}>
       <h1 style={{
         fontSize: 'clamp(26px, 3.5vw, 36px)',
@@ -20,10 +29,7 @@ export default function ToolContent({ slug }) {
         {content.h1}
       </h1>
 
-      <p style={{
-        fontSize: 16, lineHeight: 1.7, color: '#374151',
-        marginBottom: 36,
-      }}>
+      <p style={{ fontSize: 16, lineHeight: 1.7, color: '#374151', marginBottom: 36 }}>
         {content.intro}
       </p>
 
@@ -35,9 +41,7 @@ export default function ToolContent({ slug }) {
           }}>
             {s.h}
           </h2>
-          <p style={{
-            fontSize: 15, lineHeight: 1.7, color: '#4b5563',
-          }}>
+          <p style={{ fontSize: 15, lineHeight: 1.7, color: '#4b5563' }}>
             {s.p}
           </p>
         </div>

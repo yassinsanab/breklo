@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { t, localeFromPath } from '@/lib/i18n';
 
 /* ─── ICONS ──────────────────────────────────────────────── */
 const I = {
@@ -109,11 +111,17 @@ const ALL_TOOLS = [
 
 const CATEGORIES = [...new Set(ALL_TOOLS.map(t => t.cat))];
 
-const STATS = [
+const STATS_EN = [
   { n: '27M',  l: 'Files processed' },
   { n: '50+',  l: 'Tools available' },
   { n: '100%', l: 'Browser-based' },
   { n: 'Free', l: 'Forever' },
+];
+const STATS_DE = [
+  { n: '27M',       l: 'Verarbeitete Dateien' },
+  { n: '50+',       l: 'Verfügbare Tools' },
+  { n: '100%',      l: 'Browser-basiert' },
+  { n: 'Kostenlos', l: 'Für immer' },
 ];
 
 const FAQS = [
@@ -125,11 +133,25 @@ const FAQS = [
   { q: 'Why are some tools marked "soon"?',a: 'Those tools require server-side processing and are actively being built. They\'ll release gradually over the coming months.' },
 ];
 
+const FAQS_DE = [
+  { q: 'Ist Breklo kostenlos?',                     a: 'Ja. Jedes Tool auf Breklo ist komplett kostenlos. Keine Tageslimits, keine Wasserzeichen, kein Upselling, keine Kreditkarte erforderlich.' },
+  { q: 'Brauche ich ein Konto?',                    a: 'Nein. Breklo funktioniert ohne Login, Anmeldung oder E-Mail. Einfach Seite öffnen, Datei ablegen und Ergebnis herunterladen.' },
+  { q: 'Sind meine Dateien sicher?',                a: 'Dateien, die von browserbasierten Tools (PDF, Bild) verarbeitet werden, verlassen dein Gerät nie — sie werden lokal mit WebAssembly bearbeitet. Auch Audio-Tools laufen lokal.' },
+  { q: 'Muss ich Software installieren?',           a: 'Nein. Alles läuft im Browser. Jeder moderne Browser auf jedem Gerät funktioniert — nichts herunterzuladen oder zu aktualisieren.' },
+  { q: 'Welche Dateigröße wird unterstützt?',       a: 'Bis 100 MB für PDF-Tools, bis 50 MB für Bild- und Audio-Tools.' },
+  { q: 'Warum sind manche Tools mit „bald" markiert?', a: 'Diese Tools benötigen serverseitige Verarbeitung und werden gerade entwickelt. Sie werden in den nächsten Monaten schrittweise veröffentlicht.' },
+];
+
 /* ─── PAGE ───────────────────────────────────────────────── */
 export default function Home() {
   const [q, setQ]           = useState('');
   const [dragging, setDrag] = useState(false);
   const [openFaq, setFaq]   = useState(0);
+
+  const pathname = usePathname();
+  const locale = localeFromPath(pathname);
+  const isGerman = locale === 'de';
+  const faqs = isGerman ? FAQS_DE : FAQS;
 
   const query = q.trim().toLowerCase();
   const grouped = CATEGORIES.map(cat => ({
@@ -336,42 +358,56 @@ export default function Home() {
         <div className="hero-glow" />
         <div className="container" style={{ textAlign: 'center' }}>
           <div className="eyebrow">
-            <span>PDF</span><span className="sep">·</span>
-            <span>IMAGE</span><span className="sep">·</span>
-            <span>AUDIO</span><span className="sep">·</span>
-            <span>VIDEO</span>
+            {isGerman ? (
+              <>
+                <span>PDF</span><span className="sep">·</span>
+                <span>BILD</span><span className="sep">·</span>
+                <span>AUDIO</span><span className="sep">·</span>
+                <span>VIDEO</span>
+              </>
+            ) : (
+              <>
+                <span>PDF</span><span className="sep">·</span>
+                <span>IMAGE</span><span className="sep">·</span>
+                <span>AUDIO</span><span className="sep">·</span>
+                <span>VIDEO</span>
+              </>
+            )}
           </div>
           <h1 className="h1">
-            Online file tools for<br />
-            <span className="soft">all your needs.</span>
+            {isGerman ? 'Online-Datei-Tools für' : 'Online file tools for'}<br />
+            <span className="soft">{isGerman ? 'alle deine Bedürfnisse.' : 'all your needs.'}</span>
           </h1>
           <p className="hero-sub">
-            Convert, compress, and edit files — fast, free, and private. No installation needed, no account, no watermark.
+            {isGerman
+              ? 'Konvertieren, komprimieren und bearbeiten — schnell, kostenlos und privat. Keine Installation, kein Konto, kein Wasserzeichen.'
+              : 'Convert, compress, and edit files — fast, free, and private. No installation needed, no account, no watermark.'
+            }
           </p>
 
           <div
             className={`drop${dragging ? ' drag' : ''}`}
             onDragOver={e => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
-            onDrop={e => { e.preventDefault(); setDrag(false); window.location.href = '/edit-pdf'; }}
-            onClick={() => window.location.href = '/edit-pdf'}
+            onDrop={e => { e.preventDefault(); setDrag(false); window.location.href = isGerman ? '/de/edit-pdf' : '/edit-pdf'; }}
+            onClick={() => window.location.href = isGerman ? '/de/edit-pdf' : '/edit-pdf'}
           >
             <div className="drop-ic">{I.up}</div>
-            <div className="drop-title">Drop your file here</div>
-            <div className="drop-fmts">PDF, Word, JPG, PNG, MP4, MP3 — up to 100 MB</div>
-            <div className="drop-or"><span>or</span></div>
-            <button className="btn btn-brand btn-lg" onClick={e => { e.stopPropagation(); window.location.href = '/edit-pdf'; }}>Browse files</button>
-            <div className="drop-foot">100% free · No account required</div>
+            <div className="drop-title">{isGerman ? 'Datei hier ablegen' : 'Drop your file here'}</div>
+            <div className="drop-fmts">{isGerman ? 'PDF, Word, JPG, PNG, MP4, MP3 — bis zu 100 MB' : 'PDF, Word, JPG, PNG, MP4, MP3 — up to 100 MB'}</div>
+            <div className="drop-or"><span>{isGerman ? 'oder' : 'or'}</span></div>
+            <button className="btn btn-brand btn-lg" onClick={e => { e.stopPropagation(); window.location.href = isGerman ? '/de/edit-pdf' : '/edit-pdf'; }}>{isGerman ? 'Datei auswählen' : 'Browse files'}</button>
+            <div className="drop-foot">{isGerman ? '100 % kostenlos · Kein Konto erforderlich' : '100% free · No account required'}</div>
           </div>
 
           <div className="trust-row">
-            <span>{I.shield} Secure & private</span>
-            <span>{I.zap} Instant results</span>
-            <span>{I.globe} No install needed</span>
+            <span>{I.shield} {isGerman ? 'Sicher & privat' : 'Secure & private'}</span>
+            <span>{I.zap} {isGerman ? 'Sofortige Ergebnisse' : 'Instant results'}</span>
+            <span>{I.globe} {isGerman ? 'Keine Installation' : 'No install needed'}</span>
           </div>
 
           <div className="stats-row">
-            {STATS.map((s, i) => (
+            {(isGerman ? STATS_DE : STATS_EN).map((s, i) => (
               <div key={i} className="stat">
                 <div className="n">{s.n}</div>
                 <div className="l">{s.l}</div>
@@ -385,21 +421,21 @@ export default function Home() {
       <section className="section" id="tools">
         <div className="container">
           <div className="section-head">
-            <h2 className="h2">All tools, one place.</h2>
-            <p className="section-sub">{ALL_TOOLS.length} tools across PDF, image, audio and video. Live tools work right now — soon ones are on the way.</p>
+            <h2 className="h2">{isGerman ? 'Alle Tools an einem Ort.' : 'All tools, one place.'}</h2>
+            <p className="section-sub">{isGerman ? `${ALL_TOOLS.length} Tools für PDF, Bild, Audio und Video. Live-Tools funktionieren jetzt — weitere sind in Arbeit.` : `${ALL_TOOLS.length} tools across PDF, image, audio and video. Live tools work right now — soon ones are on the way.`}</p>
           </div>
 
           <div className="tools-search">
             <span className="sic">{I.search}</span>
             <input
-              placeholder={`Search ${ALL_TOOLS.length}+ tools…`}
+              placeholder={isGerman ? `${ALL_TOOLS.length}+ Tools durchsuchen…` : `Search ${ALL_TOOLS.length}+ tools…`}
               value={q}
               onChange={e => setQ(e.target.value)}
             />
           </div>
 
           {grouped.length === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--ink-4)', padding: '32px 0' }}>No tools match "{q}".</div>
+            <div style={{ textAlign: 'center', color: 'var(--ink-4)', padding: '32px 0' }}>{isGerman ? `Keine Tools gefunden für „${q}".` : `No tools match "${q}".`}</div>
           ) : (
             <div className="tools-flow">
               {grouped.flatMap(({ cat, tools }) => [
@@ -408,20 +444,20 @@ export default function Home() {
                 </h3>,
                 ...tools.map(t => {
                   const El = t.live ? Link : 'div';
-                  const props = t.live ? { href: `/${t.slug}` } : {};
+                  const props = t.live ? { href: isGerman ? `/de/${t.slug}` : `/${t.slug}` } : {};
                   return (
                     <El
                       key={t.name}
                       {...props}
                       className={`tile ${t.color}`}
                       data-soon={!t.live}
-                      title={!t.live ? 'Coming soon' : t.name}
+                      title={!t.live ? (isGerman ? 'Bald verfügbar' : 'Coming soon') : t.name}
                     >
                       <span className="tile-ic">{t.icon}</span>
                       <span className="tile-name">{t.name}</span>
                       {t.live
                         ? <span className="tile-live" aria-label="Live" />
-                        : <span className="tile-soon">soon</span>
+                        : <span className="tile-soon">{isGerman ? 'bald' : 'soon'}</span>
                       }
                     </El>
                   );
@@ -436,8 +472,8 @@ export default function Home() {
       <section className="section section-alt">
         <div className="container">
           <div className="section-head">
-            <h2 className="h2">How it works.</h2>
-            <p className="section-sub">Three steps and you're done. No accounts, no installs, no surprises.</p>
+            <h2 className="h2">{isGerman ? 'So funktioniert\'s.' : 'How it works.'}</h2>
+            <p className="section-sub">{isGerman ? 'Drei Schritte und du bist fertig. Keine Konten, keine Installation, keine Überraschungen.' : 'Three steps and you\'re done. No accounts, no installs, no surprises.'}</p>
           </div>
           <div className="steps">
             {/* Step 1 */}
@@ -449,8 +485,8 @@ export default function Home() {
                   <div className="fc"><span className="red">PDF</span><span>report.pdf</span></div>
                 </div>
               </div>
-              <div className="step-meta"><span className="step-n">1</span><h4>Upload your file</h4></div>
-              <p>Drag and drop, or browse from your device. Supports PDF, Word, JPG, PNG, MP4, MP3 and more — up to 100 MB.</p>
+              <div className="step-meta"><span className="step-n">1</span><h4>{isGerman ? 'Datei hochladen' : 'Upload your file'}</h4></div>
+              <p>{isGerman ? 'Per Drag & Drop oder über den Auswahl-Button. Unterstützt PDF, Word, JPG, PNG, MP4, MP3 und mehr — bis 100 MB.' : 'Drag and drop, or browse from your device. Supports PDF, Word, JPG, PNG, MP4, MP3 and more — up to 100 MB.'}</p>
             </div>
 
             {/* Step 2 */}
@@ -465,8 +501,8 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <div className="step-meta"><span className="step-n">2</span><h4>Choose a tool</h4></div>
-              <p>Select what you want to do — compress, convert, merge, split. It runs instantly in your browser.</p>
+              <div className="step-meta"><span className="step-n">2</span><h4>{isGerman ? 'Tool auswählen' : 'Choose a tool'}</h4></div>
+              <p>{isGerman ? 'Wähle, was du tun möchtest — komprimieren, konvertieren, zusammenführen, teilen. Läuft sofort in deinem Browser.' : 'Select what you want to do — compress, convert, merge, split. It runs instantly in your browser.'}</p>
             </div>
 
             {/* Step 3 */}
@@ -486,8 +522,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="step-meta"><span className="step-n">3</span><h4>Download the result</h4></div>
-              <p>Your file is ready in seconds. Download it directly — no email, no account, no waiting.</p>
+              <div className="step-meta"><span className="step-n">3</span><h4>{isGerman ? 'Ergebnis herunterladen' : 'Download the result'}</h4></div>
+              <p>{isGerman ? 'Deine Datei ist in Sekunden fertig. Lade sie direkt herunter — keine E-Mail, kein Konto, kein Warten.' : 'Your file is ready in seconds. Download it directly — no email, no account, no waiting.'}</p>
             </div>
           </div>
         </div>
@@ -497,17 +533,17 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="section-head">
-            <h2 className="h2">Built around the things you<br />actually do with files.</h2>
-            <p className="section-sub">Free, private, and fast — three principles that drive every tool on Breklo.</p>
+            <h2 className="h2">{isGerman ? 'Gebaut für das, was du wirklich mit Dateien machst.' : <>Built around the things you<br />actually do with files.</>}</h2>
+            <p className="section-sub">{isGerman ? 'Kostenlos, privat und schnell — drei Prinzipien, die jedes Tool auf Breklo prägen.' : 'Free, private, and fast — three principles that drive every tool on Breklo.'}</p>
           </div>
           <div className="feat-stack">
 
             {/* 1 — Free */}
             <div className="feat-row">
               <div className="feat-text">
-                <div className="feat-tag"><span className="num">1</span> Free</div>
-                <h3>Completely free, forever.</h3>
-                <p>Every tool on Breklo is free. No daily limits, no watermarks, no upsells, no credit card. We pay for the servers so you don't have to think about it.</p>
+                <div className="feat-tag"><span className="num">1</span> {isGerman ? 'Kostenlos' : 'Free'}</div>
+                <h3>{isGerman ? 'Komplett kostenlos, für immer.' : 'Completely free, forever.'}</h3>
+                <p>{isGerman ? 'Jedes Tool auf Breklo ist gratis. Keine Tageslimits, keine Wasserzeichen, kein Upselling, keine Kreditkarte. Wir zahlen für die Server, damit du dich nicht darum kümmern musst.' : 'Every tool on Breklo is free. No daily limits, no watermarks, no upsells, no credit card. We pay for the servers so you don\'t have to think about it.'}</p>
               </div>
               <div className="feat-art" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="fan">
@@ -529,9 +565,9 @@ export default function Home() {
             {/* 2 — Private */}
             <div className="feat-row flip">
               <div className="feat-text">
-                <div className="feat-tag"><span className="num">2</span> Private</div>
-                <h3>Your files stay your files.</h3>
-                <p>Processing happens in your browser whenever possible. Anything we touch is encrypted in transit and deleted within an hour — or instantly when you close the tab.</p>
+                <div className="feat-tag"><span className="num">2</span> {isGerman ? 'Privat' : 'Private'}</div>
+                <h3>{isGerman ? 'Deine Dateien bleiben deine Dateien.' : 'Your files stay your files.'}</h3>
+                <p>{isGerman ? 'Die Verarbeitung passiert wenn möglich direkt in deinem Browser. Alles, was wir berühren, ist verschlüsselt und wird innerhalb einer Stunde gelöscht — oder sofort beim Schließen des Tabs.' : 'Processing happens in your browser whenever possible. Anything we touch is encrypted in transit and deleted within an hour — or instantly when you close the tab.'}</p>
               </div>
               <div className="feat-art privacy">
                 <div className="priv-ring" style={{ width: 280, height: 280, opacity: .10 }} />
@@ -545,9 +581,9 @@ export default function Home() {
             {/* 3 — Fast */}
             <div className="feat-row">
               <div className="feat-text">
-                <div className="feat-tag"><span className="num">3</span> Fast</div>
-                <h3>Instant results, no waiting screens.</h3>
-                <p>Our document engine compiles to WebAssembly and runs locally — so a 200-page PDF compresses in under two seconds. No upload bars, no queue, no email-when-it's-ready.</p>
+                <div className="feat-tag"><span className="num">3</span> {isGerman ? 'Schnell' : 'Fast'}</div>
+                <h3>{isGerman ? 'Sofortige Ergebnisse, keine Wartebildschirme.' : 'Instant results, no waiting screens.'}</h3>
+                <p>{isGerman ? 'Unsere Engine kompiliert zu WebAssembly und läuft lokal — ein 200-seitiges PDF ist in unter zwei Sekunden komprimiert. Kein Upload-Balken, keine Warteschlange, keine „E-Mail wenn fertig".' : 'Our document engine compiles to WebAssembly and runs locally — so a 200-page PDF compresses in under two seconds. No upload bars, no queue, no email-when-it\'s-ready.'}</p>
               </div>
               <div className="feat-art speed">
                 <div className="pw">
@@ -567,8 +603,8 @@ export default function Home() {
             <div className="feat-row flip">
               <div className="feat-text">
                 <div className="feat-tag"><span className="num">4</span> Browser-first</div>
-                <h3>No software to download.</h3>
-                <p>Open the page, drop a file, get a result. Works on any modern browser, on any device — desktop, tablet, phone. Nothing to install, nothing to update, nothing to uninstall.</p>
+                <h3>{isGerman ? 'Keine Software zum Herunterladen.' : 'No software to download.'}</h3>
+                <p>{isGerman ? 'Seite öffnen, Datei ablegen, Ergebnis bekommen. Funktioniert auf jedem modernen Browser, auf jedem Gerät — Desktop, Tablet, Handy. Nichts zu installieren, nichts zu aktualisieren, nichts zu deinstallieren.' : 'Open the page, drop a file, get a result. Works on any modern browser, on any device — desktop, tablet, phone. Nothing to install, nothing to update, nothing to uninstall.'}</p>
               </div>
               <div className="feat-art browser">
                 <div className="bwin">
@@ -597,14 +633,14 @@ export default function Home() {
       <section className="section section-alt">
         <div className="container">
           <div className="section-head">
-            <h2 className="h2">Frequently asked questions.</h2>
+            <h2 className="h2">{isGerman ? 'Häufig gestellte Fragen.' : 'Frequently asked questions.'}</h2>
             <p className="section-sub">
-              Can't find what you're looking for? Email{' '}
+              {isGerman ? 'Nicht das gefunden, was du suchst? Schreib uns an ' : 'Can\'t find what you\'re looking for? Email '}
               <a href="mailto:hello@breklo.com" style={{ color: 'var(--brand-ink)', fontWeight: 600 }}>hello@breklo.com</a>
             </p>
           </div>
           <div className="faq-list">
-            {FAQS.map((f, i) => (
+            {faqs.map((f, i) => (
               <div key={i} className={`faq-item${openFaq === i ? ' open' : ''}`} onClick={() => setFaq(openFaq === i ? -1 : i)}>
                 <div className="faq-q">
                   <span>{f.q}</span>
@@ -621,10 +657,10 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="cta-banner">
-            <h3>All the file tools you need,<br />in a single platform.</h3>
-            <p>No account. No credit card. Just upload and go.</p>
+            <h3>{isGerman ? <>Alle Datei-Tools, die du brauchst,<br />auf einer Plattform.</> : <>All the file tools you need,<br />in a single platform.</>}</h3>
+            <p>{isGerman ? 'Kein Konto. Keine Kreditkarte. Einfach hochladen und loslegen.' : 'No account. No credit card. Just upload and go.'}</p>
             <button className="btn btn-white btn-lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              Upload a file {I.arr}
+              {isGerman ? 'Datei hochladen' : 'Upload a file'} {I.arr}
             </button>
           </div>
         </div>
@@ -634,8 +670,8 @@ export default function Home() {
       <div className="tools-index" id="tools-index">
         <div className="container">
           <div style={{ marginBottom: 8 }}>
-            <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.03em', color: 'var(--ink)', margin: '0 0 8px' }}>Browse every tool.</h2>
-            <p style={{ color: 'var(--ink-4)', fontSize: 15 }}>{ALL_TOOLS.length} tools across PDF, image, audio and video. Live ones work right now.</p>
+            <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.03em', color: 'var(--ink)', margin: '0 0 8px' }}>{isGerman ? 'Alle Tools durchstöbern.' : 'Browse every tool.'}</h2>
+            <p style={{ color: 'var(--ink-4)', fontSize: 15 }}>{isGerman ? `${ALL_TOOLS.length} Tools für PDF, Bild, Audio und Video. Live-Tools funktionieren jetzt.` : `${ALL_TOOLS.length} tools across PDF, image, audio and video. Live ones work right now.`}</p>
           </div>
           <div className="tools-cats">
             {CATEGORIES.map(cat => {
@@ -647,13 +683,13 @@ export default function Home() {
                     {tools.map(t => (
                       <li key={t.name}>
                         {t.live ? (
-                          <Link href={`/${t.slug}`} className="live">
+                          <Link href={isGerman ? `/de/${t.slug}` : `/${t.slug}`} className="live">
                             <span className="dot" /><span>{t.name}</span>
                           </Link>
                         ) : (
                           <a href="#" className="soon" onClick={e => e.preventDefault()}>
                             <span className="dot" /><span>{t.name}</span>
-                            <span className="soon-tag">soon</span>
+                            <span className="soon-tag">{isGerman ? 'bald' : 'soon'}</span>
                           </a>
                         )}
                       </li>

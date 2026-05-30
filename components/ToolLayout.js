@@ -1,8 +1,11 @@
 'use client';
+import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ToolFAQ from './ToolFAQ';
 import Link from 'next/link';
+import { toolMetaDe } from '@/lib/toolMetaDe';
+import { t, localeFromPath } from '@/lib/i18n';
 
 /**
  * Upgraded ToolLayout — polished shell that applies to ALL tool pages.
@@ -34,6 +37,19 @@ export default function ToolLayout({
   howSteps = DEFAULT_HOW,
   illust = null,
 }) {
+  const pathname = usePathname();
+  const locale = localeFromPath(pathname);
+  const isGerman = locale === 'de';
+
+  if (isGerman && slug && toolMetaDe[slug]) {
+    title    = toolMetaDe[slug].title    || title;
+    subtitle = toolMetaDe[slug].subtitle || subtitle;
+    bullets  = toolMetaDe[slug].bullets  || bullets;
+  }
+
+  const homeHref = isGerman ? '/de' : '/';
+  const toolHref = (s) => isGerman ? `/de/${s}` : `/${s}`;
+
   const { toolFaqs } = require('@/lib/toolFaqs');
   const { toolToPosts } = require('@/lib/toolToPosts');
   const faqs = slug && toolFaqs[slug] ? toolFaqs[slug] : [];
@@ -46,9 +62,9 @@ export default function ToolLayout({
       {/* BREADCRUMB */}
       <div className="bk-crumb">
         <div className="bk-crumb-inner bk-container">
-          <Link href="/">Home</Link>
+          <Link href={homeHref}>{isGerman ? 'Start' : 'Home'}</Link>
           <span className="sep">›</span>
-          <Link href="/#tools">All tools</Link>
+          <Link href={isGerman ? '/de' : '/#tools'}>{isGerman ? 'Alle Tools' : 'All tools'}</Link>
           <span className="sep">›</span>
           <span className="here">{title}</span>
         </div>
@@ -109,10 +125,10 @@ export default function ToolLayout({
       {relatedTools.length > 0 && (
         <section className="bk-tp-related">
           <div className="bk-container">
-            <h2>Tools that pair well</h2>
+            <h2>{isGerman ? 'Passende Tools' : 'Tools that pair well'}</h2>
             <div className="bk-related-grid">
               {relatedTools.map((t, i) => (
-                <Link key={t.slug} href={`/${t.slug}`} className={`bk-related-card ${COLORS[i % COLORS.length]}`}>
+                <Link key={t.slug} href={toolHref(t.slug)} className={`bk-related-card ${COLORS[i % COLORS.length]}`}>
                   <span className="ic">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
                   </span>
@@ -134,8 +150,8 @@ export default function ToolLayout({
       <section className="bk-tp-how">
         <div className="bk-container">
           <div className="heading">
-            <h2>How to use {title}</h2>
-            <p>Three steps. No installation, no account, no watermark.</p>
+            <h2>{isGerman ? `So verwendest du ${title}` : `How to use ${title}`}</h2>
+            <p>{isGerman ? 'Drei Schritte. Keine Installation, kein Konto, kein Wasserzeichen.' : 'Three steps. No installation, no account, no watermark.'}</p>
           </div>
           <div className="bk-how-grid">
             {howSteps.map((s, i) => (
@@ -153,7 +169,7 @@ export default function ToolLayout({
       {relatedPosts.length > 0 && (
         <section className="bk-tp-guides">
           <div className="bk-container">
-            <h2>Related guides</h2>
+            <h2>{isGerman ? 'Verwandte Anleitungen' : 'Related guides'}</h2>
             <div className="bk-guides">
               {relatedPosts.map(p => (
                 <Link key={p.slug} href={`/blog/${p.slug}`} className="bk-guide">
