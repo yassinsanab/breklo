@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import ToolLayout from '@/components/ToolLayout';
 import { convertImageFormat, downloadBlob, formatSize, replaceExt } from '@/lib/imageUtils';
+import { localeFromPath } from '@/lib/i18n';
 
 // Generic image format converter — used by jpg-to-png, png-to-jpg, jpg-to-webp, png-to-webp
 export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, outputMime, outputExt, relatedTools, slug = '' }) {
@@ -11,6 +13,9 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
   const [progress, setProgress] = useState('');
   const [done, setDone]       = useState(false);
   const [dragging, setDrag]   = useState(false);
+
+  const pathname = usePathname();
+  const isGerman = localeFromPath(pathname) === 'de';
 
   function addFiles(incoming) {
     const imgs = Array.from(incoming).filter(f => accept.some(a => f.type === a || f.name.toLowerCase().endsWith(a.replace('image/', '.'))));
@@ -26,12 +31,12 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setProgress(`Converting ${i + 1} of ${files.length}...`);
+        setProgress(isGerman ? `Konvertiere ${i + 1} von ${files.length}…` : `Converting ${i + 1} of ${files.length}...`);
         const blob = await convertImageFormat(file, outputMime, quality);
         downloadBlob(blob, replaceExt(file.name, outputExt));
         await new Promise(r => setTimeout(r, 150));
       }
-      setProgress(`Done — ${files.length} file${files.length > 1 ? 's' : ''} converted`);
+      setProgress(isGerman ? `Fertig — ${files.length} Datei${files.length > 1 ? 'en' : ''} konvertiert` : `Done — ${files.length} file${files.length > 1 ? 's' : ''} converted`);
       setDone(true);
     } catch (e) {
       console.error(e);
@@ -60,9 +65,11 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
         </div>
         <p style={{ fontWeight: 700, fontSize: 15, color: '#111', marginBottom: 4 }}>
-          {files.length === 0 ? `Drop ${inputLabel} files here` : 'Add more files'}
+          {files.length === 0
+            ? (isGerman ? `${inputLabel}-Dateien hier ablegen` : `Drop ${inputLabel} files here`)
+            : (isGerman ? 'Weitere Dateien hinzufügen' : 'Add more files')}
         </p>
-        <p style={{ fontSize: 13, color: '#9ca3af' }}>or click to browse</p>
+        <p style={{ fontSize: 13, color: '#9ca3af' }}>{isGerman ? 'oder klicken zum Auswählen' : 'or click to browse'}</p>
         <input id="fi" type="file" multiple accept={accept.join(',')} style={{ display: 'none' }} onChange={e => addFiles(e.target.files)} />
       </div>
 
@@ -86,7 +93,7 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
       {files.length > 0 && showQuality && (
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Output quality</label>
+            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{isGerman ? 'Ausgabequalität' : 'Output quality'}</label>
             <span style={{ fontSize: 13, color: '#0071e3', fontWeight: 600 }}>{Math.round(quality * 100)}%</span>
           </div>
           <input type="range" min="0.5" max="1" step="0.01" value={quality}
@@ -94,7 +101,7 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
             style={{ width: '100%', accentColor: '#0071e3' }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9ca3af', marginTop: 3 }}>
-            <span>Smaller file</span><span>Best quality</span>
+            <span>{isGerman ? 'Kleinere Datei' : 'Smaller file'}</span><span>{isGerman ? 'Beste Qualität' : 'Best quality'}</span>
           </div>
         </div>
       )}
@@ -111,7 +118,13 @@ export function ImageConverter({ title, subtitle, bullets, accept, inputLabel, o
         color: files.length === 0 ? '#9ca3af' : '#fff',
         fontWeight: 700, fontSize: 15, cursor: files.length === 0 ? 'not-allowed' : 'pointer',
       }}>
-        {loading ? 'Converting...' : done ? 'Convert again' : `Convert ${files.length > 0 ? files.length : ''} file${files.length !== 1 ? 's' : ''}`}
+        {loading
+          ? (isGerman ? 'Konvertiere…' : 'Converting...')
+          : done
+          ? (isGerman ? 'Erneut konvertieren' : 'Convert again')
+          : isGerman
+          ? `${files.length > 0 ? files.length : ''} Datei${files.length !== 1 ? 'en' : ''} konvertieren`
+          : `Convert ${files.length > 0 ? files.length : ''} file${files.length !== 1 ? 's' : ''}`}
       </button>
     </ToolLayout>
   );

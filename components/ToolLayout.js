@@ -47,6 +47,12 @@ export default function ToolLayout({
     bullets  = toolMetaDe[slug].bullets  || bullets;
   }
 
+  if (isGerman) {
+    if (tagLabel === 'Live · Free · No account') tagLabel = 'Live · Kostenlos · Kein Konto';
+    if (metaTrust === DEFAULT_TRUST) metaTrust = DEFAULT_TRUST_DE;
+    if (howSteps === DEFAULT_HOW) howSteps = DEFAULT_HOW_DE;
+  }
+
   const homeHref = isGerman ? '/de' : '/';
   const toolHref = (s) => isGerman ? `/de/${s}` : `/${s}`;
 
@@ -134,7 +140,7 @@ export default function ToolLayout({
                   </span>
                   <div>
                     <h5>{t.name}</h5>
-                    <p>{t.desc || 'Open tool →'}</p>
+                    <p>{t.desc || (isGerman ? 'Tool öffnen →' : 'Open tool →')}</p>
                   </div>
                   <span className="arr">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -178,7 +184,7 @@ export default function ToolLayout({
                     <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
                   </svg>
                   <span>{p.title}</span>
-                  <span className="arr">Read →</span>
+                  <span className="arr">{isGerman ? 'Lesen →' : 'Read →'}</span>
                 </Link>
               ))}
             </div>
@@ -208,10 +214,22 @@ const DEFAULT_TRUST = [
   { icon: ICON.globe, label: 'Works on any device' },
 ];
 
+const DEFAULT_TRUST_DE = [
+  { icon: ICON.shield, label: 'Dateien verlassen nie deinen Browser' },
+  { icon: ICON.zap, label: 'Sofortige Ergebnisse, kein Warten' },
+  { icon: ICON.globe, label: 'Funktioniert auf jedem Gerät' },
+];
+
 const DEFAULT_HOW = [
   { title: 'Upload your file', body: 'Drag and drop, or click to browse. We support files up to 100 MB.' },
   { title: 'Pick your options', body: 'Choose the settings that fit your task. Defaults work well for most cases.' },
   { title: 'Download the result', body: 'Your file is ready in seconds. Download directly — no email, no account.' },
+];
+
+const DEFAULT_HOW_DE = [
+  { title: 'Datei hochladen', body: 'Per Drag & Drop oder klicken zum Auswählen. Unterstützt Dateien bis 100 MB.' },
+  { title: 'Optionen wählen', body: 'Wähle die passenden Einstellungen. Die Standardwerte funktionieren für die meisten Fälle.' },
+  { title: 'Ergebnis herunterladen', body: 'Deine Datei ist in Sekunden fertig. Direkt herunterladen — keine E-Mail, kein Konto.' },
 ];
 
 const COLORS = ['blue', 'purple', 'teal', 'orange', 'pink'];

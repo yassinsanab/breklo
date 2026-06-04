@@ -1,7 +1,12 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { t, localeFromPath } from '@/lib/i18n';
 
 export default function Footer() {
+  const pathname = usePathname();
+  const locale = localeFromPath(pathname);
+  const isGerman = locale === 'de';
   return (
     <footer style={{ background: '#0a0a0a', color: '#52525b', padding: '64px 24px 32px' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
@@ -13,12 +18,12 @@ export default function Footer() {
               <img src="/logo-wide.png" alt="breklo" style={{ height: 22, width: 'auto', display: 'block' }} />
             </div>
             <p style={{ fontSize: 14, color: '#52525b', lineHeight: 1.7, maxWidth: 220, margin: '0 0 20px' }}>
-              All-in-one file tools. PDF, image, audio and video — free and browser-based.
+              {t(locale, 'footer.tagline')}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12.5, color: '#3f3f46' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', display: 'inline-block', boxShadow: '0 0 0 3px rgba(22,163,74,.2)' }} />
-                All systems normal
+                {t(locale, 'footer.status')}
               </span>
               <span>v2025.5</span>
             </div>
@@ -26,7 +31,7 @@ export default function Footer() {
 
           {/* Popular tools */}
           <div>
-            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>Popular tools</h5>
+            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>{t(locale, 'footer.popular')}</h5>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 ['Compress PDF', 'compress-pdf'],
@@ -38,7 +43,7 @@ export default function Footer() {
                 ['Resize Image', 'resize-image'],
               ].map(([name, slug]) => (
                 <li key={slug}>
-                  <Link href={`/${slug}`} style={{ fontSize: 13.5, color: '#52525b', transition: 'color .14s' }}
+                  <Link href={isGerman ? `/de/${slug}` : `/${slug}`} style={{ fontSize: 13.5, color: '#52525b', transition: 'color .14s' }}
                     onMouseEnter={e => e.target.style.color = '#a1a1aa'}
                     onMouseLeave={e => e.target.style.color = '#52525b'}
                   >{name}</Link>
@@ -49,11 +54,16 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>Company</h5>
+            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>{t(locale, 'footer.company')}</h5>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['About us', 'Blog', 'Contact', 'Changelog'].map(l => (
+              {[
+                [t(locale, 'footer.about'),     '#'],
+                ['Blog',                         '/blog'],
+                [t(locale, 'footer.contact'),    '#'],
+                [t(locale, 'footer.changelog'),  '#'],
+              ].map(([l, href]) => (
                 <li key={l}>
-                  <Link href={l === 'Blog' ? '/blog' : '#'} style={{ fontSize: 13.5, color: '#52525b', transition: 'color .14s' }}
+                  <Link href={href} style={{ fontSize: 13.5, color: '#52525b', transition: 'color .14s' }}
                     onMouseEnter={e => e.target.style.color = '#a1a1aa'}
                     onMouseLeave={e => e.target.style.color = '#52525b'}
                   >{l}</Link>
@@ -64,9 +74,9 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>Legal</h5>
+            <h5 style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 16px', letterSpacing: '-.01em' }}>{t(locale, 'footer.legal')}</h5>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'DPA'].map(l => (
+              {[t(locale, 'footer.privacy'), t(locale, 'footer.terms'), t(locale, 'footer.cookies'), t(locale, 'footer.dpa')].map(l => (
                 <li key={l}>
                   <a href="#" style={{ fontSize: 13.5, color: '#52525b', transition: 'color .14s' }}
                     onMouseEnter={e => e.target.style.color = '#a1a1aa'}
@@ -80,7 +90,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div style={{ borderTop: '1px solid #18181b', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ fontSize: 13, color: '#3f3f46' }}>© 2025 Breklo · All rights reserved · breklo.com</div>
+          <div style={{ fontSize: 13, color: '#3f3f46' }}>{t(locale, 'footer.rights')}</div>
           <div style={{ display: 'flex', gap: 16 }}>
             {[
               { label: 'X', path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zM17.083 19.77h1.833L7.084 4.126H5.117z' },

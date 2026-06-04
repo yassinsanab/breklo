@@ -1,8 +1,13 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
+import { t, localeFromPath } from '@/lib/i18n';
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const locale = localeFromPath(pathname);
+  const isGerman = locale === 'de';
   return (
     <>
     <style>{`@media (max-width: 768px) { .nav-links { display: none !important; } }`}</style>
@@ -26,11 +31,11 @@ export default function Navbar() {
         {/* NAV LINKS — centered */}
         <nav className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }}>
           {[
-            ['Edit & Sign', '/#tools'],
-            ['Convert', '/#tools'],
-            ['Image Tools', '/#tools'],
-            ['Audio & Video', '/#tools'],
-            ['Blog', '/blog'],
+            [t(locale, 'nav.edit_sign'),   isGerman ? '/de' : '/#tools'],
+            [t(locale, 'nav.convert'),     isGerman ? '/de' : '/#tools'],
+            [t(locale, 'nav.image_tools'), isGerman ? '/de' : '/#tools'],
+            [t(locale, 'nav.audio_video'), isGerman ? '/de' : '/#tools'],
+            [t(locale, 'nav.blog'),        '/blog'],
           ].map(([label, href]) => (
             <Link key={label} href={href} style={{
               padding: '8px 14px', borderRadius: 8, fontSize: 14.5, fontWeight: 500,
@@ -48,7 +53,7 @@ export default function Navbar() {
         <LanguageSwitcher />
 
         {/* ALL TOOLS BUTTON */}
-        <Link href="/#tools-index" style={{
+        <Link href={isGerman ? '/de' : '/#tools-index'} style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '8px 14px', borderRadius: 8,
           fontSize: 14.5, fontWeight: 600, color: '#0a0a0a',
@@ -64,7 +69,7 @@ export default function Navbar() {
             <i style={{ display: 'block', height: 1.5, background: 'currentColor', borderRadius: 2, width: '70%' }} />
             <i style={{ display: 'block', height: 1.5, background: 'currentColor', borderRadius: 2 }} />
           </span>
-          <span>All tools</span>
+          <span>{t(locale, 'nav.all_tools')}</span>
         </Link>
       </div>
     </header>
