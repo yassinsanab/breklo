@@ -2,6 +2,7 @@
 import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ToolCTA from '@/components/ToolCTA';
 import { getPostBySlug, getAllSlugs } from '@/lib/posts';
 
 export async function generateMetadata({ params }) {
@@ -204,8 +205,18 @@ export default function BlogPost({ params }) {
           {post.description}
         </p>
 
+        {/* TOP CTA */}
+        {post.relatedTools?.[0] && (
+          <ToolCTA tool={post.relatedTools[0]} />
+        )}
+
         {/* CONTENT */}
         <div>{renderContent(post.content)}</div>
+
+        {/* BOTTOM CTA */}
+        {post.relatedTools?.[0] && (
+          <ToolCTA tool={post.relatedTools[0]} />
+        )}
 
         {/* RELATED TOOLS CTA */}
         <div style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: 14, padding: '24px', margin: '40px 0' }}>
