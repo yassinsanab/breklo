@@ -59,6 +59,7 @@ export default function Footer() {
               {[
                 [t(locale, 'footer.about'),     '#'],
                 ['Blog',                         '/blog'],
+                ['Compare alternatives',         '/alternatives'],
                 [t(locale, 'footer.contact'),    '#'],
                 [t(locale, 'footer.changelog'),  '#'],
               ].map(([l, href]) => (

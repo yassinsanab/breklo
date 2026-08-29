@@ -2,6 +2,7 @@
 // Submit https://www.breklo.com/sitemap.xml to Google Search Console
 
 import { posts } from '@/lib/posts';
+import { getAllAlternativeSlugs } from '@/lib/alternatives';
 
 const SITE = 'https://www.breklo.com';
 
@@ -73,6 +74,12 @@ export default function sitemap() {
   // Blog posts (English only for now)
   for (const post of posts) {
     entries.push(entry(`/blog/${post.slug}`, { priority: 0.6, changefreq: 'monthly' }));
+  }
+
+  // Alternatives hub + pages
+  entries.push(entry('/alternatives', { priority: 0.7, changefreq: 'monthly' }));
+  for (const slug of getAllAlternativeSlugs()) {
+    entries.push(entry(`/alternatives/${slug}`, { priority: 0.8, changefreq: 'monthly' }));
   }
 
   return entries;
