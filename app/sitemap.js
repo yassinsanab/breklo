@@ -17,10 +17,12 @@ const LIVE_TOOLS = [
   'gif-to-jpg', 'svg-to-jpg', 'merge-images', 'resize-image',
   'mp4-to-mp3', 'mp4-to-wav', 'wav-to-mp3', 'mp3-to-wav',
   'm4a-to-mp3', 'flac-to-mp3', 'ogg-to-mp3',
+  'avif-to-jpg', 'avif-to-png', 'jpg-to-avif',
 ];
 
-// ALL live tools now have German versions
-const TOOLS_WITH_DE = [...LIVE_TOOLS];
+// All live tools have German versions, except tools not yet localized
+const NOT_YET_LOCALIZED = ['avif-to-jpg', 'avif-to-png', 'jpg-to-avif'];
+const TOOLS_WITH_DE = LIVE_TOOLS.filter(slug => !NOT_YET_LOCALIZED.includes(slug));
 
 function entry(path, { hasGerman = false, priority = 0.7, changefreq = 'monthly' } = {}) {
   const languages = { en: `${SITE}${path}` };

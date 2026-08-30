@@ -92,6 +92,9 @@ const ALL_TOOLS = [
   { name:'SVG to JPG',         cat:'Image Tools',       icon:TI.image,     color:'amber',  live:true,  slug:'svg-to-jpg' },
   { name:'Merge Images',       cat:'Image Tools',       icon:TI.merge,     color:'blue',   live:true,  slug:'merge-images' },
   { name:'Resize Image',       cat:'Image Tools',       icon:TI.resize,    color:'purple', live:true,  slug:'resize-image' },
+  { name:'AVIF to JPG',        cat:'Image Tools',       icon:TI.image,     color:'orange', live:true,  slug:'avif-to-jpg' },
+  { name:'AVIF to PNG',        cat:'Image Tools',       icon:TI.image,     color:'green',  live:true,  slug:'avif-to-png' },
+  { name:'JPG to AVIF',        cat:'Image Tools',       icon:TI.image,     color:'blue',   live:true,  slug:'jpg-to-avif' },
   { name:'Enhance Image',      cat:'Image Tools',       icon:TI.sparkle,   color:'amber',  live:false, slug:null },
   { name:'Background Remover', cat:'Image Tools',       icon:TI.sparkle,   color:'pink',   live:false, slug:null },
   // Audio & Video
